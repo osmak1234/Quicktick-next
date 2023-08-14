@@ -24,6 +24,17 @@ export async function createUser(userData: User): Promise<void> {
   return;
 }
 
+export async function logout(): Promise<void> {
+  const response = await fetch("https:/quicktick-api.fly.dev/logout", {
+    method: "GET",
+    credentials: "include",
+  });
+
+  await handle_error(response);
+
+  return;
+}
+
 export async function deleteUser(): Promise<void> {
   const response = await fetch(
     "https://quicktick-api.fly.dev/delete/user_cauth",
@@ -56,6 +67,5 @@ export async function authenticateUser(
     const user: User = (await response.json()) as User;
     return user;
   }
-
   return;
 }

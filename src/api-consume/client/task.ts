@@ -1,7 +1,7 @@
 import { handle_error } from "../helper";
 
 export interface Task {
-  id: number;
+  uuid: string;
   name: string;
   description: string;
   completed: boolean;
@@ -11,7 +11,7 @@ export interface Task {
 export interface TaskToCreate {
   name: string;
   description: string;
-  id: string;
+  uuid: string;
 }
 
 export async function getAllUserTasks(): Promise<Task[]> {
@@ -28,9 +28,9 @@ export async function getAllUserTasks(): Promise<Task[]> {
   return tasks;
 }
 
-export async function createTask(taskData: Task): Promise<void> {
+export async function createTask(taskData: TaskToCreate): Promise<void> {
   const response = await fetch(
-    "https:/quicktick-api.fly.dev/post/create_task",
+    "https:/quicktick-api.fly.dev/post/create_task_cauth",
     {
       method: "POST",
       headers: {
@@ -76,17 +76,14 @@ export interface TaskUpdateInput {
 }
 
 export async function updateTask(updateData: TaskUpdateInput): Promise<void> {
-  const response = await fetch(
-    "https:/quicktick-api.fly.dev/patch/update_task_cauth",
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updateData),
-      credentials: "include",
-    }
-  );
+  const response = await fetch("https:/quicktick-api.fly.dev/patch/task", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updateData),
+    credentials: "include",
+  });
 
   await handle_error(response);
 

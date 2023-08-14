@@ -108,6 +108,7 @@ const LoginPage = () => {
             onSubmit={() => {
               login()
                 .then(() => {
+                  window.location.reload();
                   router.push("/").catch((err) => {
                     console.log(err);
                   });
@@ -177,6 +178,7 @@ const LoginPage = () => {
             onClick={() => {
               login()
                 .then(() => {
+                  window.location.reload();
                   router.push("/").catch((err) => {
                     console.log(err);
                   });
@@ -191,6 +193,7 @@ const LoginPage = () => {
               if (e.key === "Enter") {
                 login()
                   .then(() => {
+                    window.location.reload();
                     router.push("/").catch((err) => {
                       console.log(err);
                     });

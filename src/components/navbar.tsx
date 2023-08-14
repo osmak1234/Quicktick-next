@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   chakra,
   Box,
@@ -37,28 +37,27 @@ export default function Navbar() {
   // fetch the user name
   const [user, setUser] = useState<User | null>(null);
 
-  function getUserData() {
+  const getUserData = useCallback(() => {
     console.log("getting user data");
     console.log(document.cookie);
-    if (document.cookie.includes("user_uuid")) {
-      authenticateUser("cookie", "cookie")
-        .then((userData) => {
-          if (!userData) {
-            router.push("/login").catch((err) => console.log(err));
-          } else {
-            setUser(userData);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-  }
+    authenticateUser("cookie", "cookie")
+      .then((userData) => {
+        if (!userData) {
+          router.push("/login").catch((err) => console.log(err));
+        } else {
+          setUser(userData);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []); // No dependencies since it doesn't depend on any props or state
 
   useEffect(() => {
     getUserData();
-    console.log(user);
-  });
+  }, [getUserData]); // Include getUserData as a dependency here
+
+  // Rest of your component code
 
   return (
     <React.Fragment>
@@ -108,20 +107,6 @@ export default function Navbar() {
                 />
                 <Button
                   w="full"
-                  variant="ghost"
-                  leftIcon={<AiFillHome />}
-                  _hover={{ bg: `${bg}3` }}
-                  _active={{ bg: `${bg}1` }}
-                  color={`${fg}2`}
-                  bg={`${bg}2`}
-                  onClick={() => {
-                    router.push("/").catch((err) => console.log(err));
-                  }}
-                >
-                  <Link href="/">Home</Link>
-                </Button>
-                <Button
-                  w="full"
                   variant="solid"
                   colorScheme="brand"
                   leftIcon={<MdChecklistRtl />}
@@ -135,6 +120,13 @@ export default function Navbar() {
                 >
                   <Link href="/app">To-Do</Link>
                 </Button>
+                <Box
+                  mt={2}
+                  w="full"
+                  h="2px"
+                  bg="brand.light.fg3"
+                  _dark={{ bg: "brand.dark.fg3" }}
+                />
               </VStack>
             </Box>
             <chakra.a
@@ -154,20 +146,6 @@ export default function Navbar() {
             </chakra.a>
 
             <HStack spacing={3} display={{ base: "none", md: "inline-flex" }}>
-              <Button
-                variant="ghost"
-                leftIcon={<AiFillHome />}
-                size="sm"
-                _hover={{ bg: `${bg}3` }}
-                _active={{ bg: `${bg}1` }}
-                color={`${fg}2`}
-                bg={`${bg}2`}
-                onClick={() => {
-                  router.push("/").catch((err) => console.log(err));
-                }}
-              >
-                <Link href="/">Home</Link>
-              </Button>
               <Button
                 variant="solid"
                 _hover={{ bg: `${bg}3` }}
@@ -217,6 +195,13 @@ export default function Navbar() {
             </Text>
           </HStack>
         </Flex>
+        <Box
+          mt={2}
+          w="full"
+          h="2px"
+          bg="brand.light.fg3"
+          _dark={{ bg: "brand.dark.fg3" }}
+        />
       </chakra.header>
     </React.Fragment>
   );
