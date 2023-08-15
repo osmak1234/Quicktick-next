@@ -47,31 +47,42 @@ export default function Profile() {
         flexDirection="column"
         p={4}
       >
-        <Heading as="h1" size="2xl" color={fg}>
-          Profile
-        </Heading>
-        <Heading as="h2" size="xl" color={fg}>
-          {user?.name}
-        </Heading>
-        <Button
-          variant="solid"
-          _hover={{ bg: `${bg}3` }}
-          _active={{ bg: `${bg}1` }}
-          color={`${fg}2`}
-          bg={`${bg}2`}
-          onClick={() => {
-            logout()
-              .then(() => {
-                window.location.reload();
-                alert("Logged out!");
-              })
-              .catch((err) => {
-                console.log(err);
-              });
-          }}
+        <Box
+          w="full"
+          maxW="500px"
+          mx="auto"
+          bg={`${bg}_h`}
+          shadow="lg"
+          rounded="lg"
+          overflow="hidden"
+          p={4}
         >
-          Log out
-        </Button>
+          <Heading as="h1" size="2xl" color={fg}>
+            Profile
+          </Heading>
+          <Heading as="h2" size="xl" color={fg}>
+            {user?.name}
+          </Heading>
+          <Button
+            variant="solid"
+            _hover={{ bg: `${bg}3` }}
+            _active={{ bg: `${bg}1` }}
+            color={`${fg}2`}
+            bg={`${bg}2`}
+            onClick={() => {
+              logout()
+                .then(() => {
+                  window.location.reload();
+                  alert("Logged out!");
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            }}
+          >
+            Log out
+          </Button>
+        </Box>
       </Box>
     </>
   );
