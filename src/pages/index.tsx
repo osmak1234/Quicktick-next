@@ -25,6 +25,7 @@ export default function Home() {
         display="flex"
         alignItems="center"
         justifyContent="center"
+        h="100vh"
       >
         <Box px={8} py={24} mx="auto">
           <Box
