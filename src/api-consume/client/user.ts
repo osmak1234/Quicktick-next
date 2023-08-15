@@ -6,7 +6,7 @@ export interface User {
   password: string;
 }
 
-export async function createUser(userData: User): Promise<void> {
+export async function createUser(userData: User): Promise<Response> {
   const response = await fetch(
     "https:/quicktick-api.fly.dev/post/create_user",
     {
@@ -21,7 +21,7 @@ export async function createUser(userData: User): Promise<void> {
 
   await handle_error(response);
 
-  return;
+  return response;
 }
 
 export async function logout(): Promise<void> {

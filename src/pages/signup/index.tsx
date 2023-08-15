@@ -26,7 +26,7 @@ import { useRouter } from "next/router";
 
 import * as EmailValidator from "email-validator";
 
-import { authenticateUser } from "~/api-consume/client/user";
+import { User, authenticateUser, createUser } from "~/api-consume/client/user";
 import { BsLightningFill } from "react-icons/bs";
 
 const SignUpPage = () => {
@@ -49,6 +49,8 @@ const SignUpPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement | null>(null);
 
+  const [accoundCreation, setAccountCreation] = useState(false);
+
   async function login() {
     if (!EmailValidator.validate(email)) {
       setEmailError(true);
@@ -59,15 +61,23 @@ const SignUpPage = () => {
       }
     } else if (name.length < 5) {
       setNameError(false);
-
       throw new Error("Name must contain least 5 characters long");
     } else if (password.length < 6) {
       setEmailError(false);
       setPasswordError(true);
       throw new Error("Password must be at least 6 characters long");
     } else {
-      const response = await authenticateUser(email, password);
-      if (response) {
+      const user: User = {
+        name,
+        email,
+        password,
+      };
+      const response = await createUser(user);
+
+      if (response.status === 200) {
+        onOpen();
+        setAccountCreation(true);
+      } else {
         throw new Error("Failed while subimitting form try again");
       }
     }
@@ -153,6 +163,29 @@ const SignUpPage = () => {
               fontSize={["md", "lg", "xl"]}
               fontWeight="bold"
             >
+              Name
+            </FormLabel>
+            <Input
+              isInvalid={emailError}
+              maxW={500}
+              w="full"
+              m="auto"
+              focusBorderColor={orange}
+              borderColor={`${bg}2`}
+              color={`${fg}_h`}
+              bg={`${bg}_h`}
+              borderWidth={2}
+              type="email"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your email"
+            />
+
+            <FormLabel
+              color={`${fg}2`}
+              fontSize={["md", "lg", "xl"]}
+              fontWeight="bold"
+            >
               Password
             </FormLabel>
             <Input
@@ -227,6 +260,7 @@ const SignUpPage = () => {
               }}
               p={0}
             >
+              {}
               <Flex
                 w="full"
                 bg="transparent"
@@ -294,9 +328,9 @@ const SignUpPage = () => {
         </AlertDialog>
         <Flex justifyContent="center" alignItems="center">
           <Text color={fg} mr={2}>
-            {" Don't have an account?"}
+            {" Already have an account?"}
           </Text>
-          <Link href="/signup">
+          <Link href="/login">
             <ChakraLink
               color="brand.light.blue_dim"
               _hover={{
@@ -304,7 +338,7 @@ const SignUpPage = () => {
                 textDecoration: "underline",
               }}
             >
-              Sign Up
+              Log In
             </ChakraLink>
           </Link>
         </Flex>

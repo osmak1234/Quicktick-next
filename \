@@ -285,120 +285,117 @@ export default function Todo() {
                     });
                   }}
                 >
-                  Add task
+                  Add task (enter)
                 </Button>
               </AlertDialogContent>
             </AlertDialog>
             {isLargerThan768 ? "Start typing to add a task" : ""}
-            {tasks
-              .sort((a, b) => Number(a.completed) - Number(b.completed))
-              .map((task) => (
-                <Box
-                  w="full"
-                  maxW={500}
-                  key={task.uuid}
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  bg={`${bg}_h`}
-                  p={4}
-                  borderRadius="md"
-                  mt={4}
-                  boxShadow="md"
-                  transition="background-color 0.2s, transform 0.2s"
+            {tasks.map((task) => (
+              <Box
+                w="full"
+                maxW={500}
+                key={task.uuid}
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                bg={`${bg}_h`}
+                p={4}
+                borderRadius="md"
+                mt={4}
+                boxShadow="md"
+                transition="background-color 0.2s, transform 0.2s"
+                _hover={{
+                  bg: `${bg}_h_hover`,
+                  transform: "translateY(-2px)",
+                  boxShadow: "lg",
+                }}
+              >
+                <Button
+                  aria-label="toggle task status"
+                  mr={4}
+                  bg="transparent"
+                  _dark={{
+                    bg: "transparent",
+                    color: task.completed
+                      ? "brand.dark.orange"
+                      : "brand.dark.fg",
+                  }}
+                  color={
+                    task.completed ? "brand.light.orange" : "brand.light.fg"
+                  }
                   _hover={{
-                    bg: `${bg}_h_hover`,
-                    transform: "translateY(-2px)",
-                    boxShadow: "lg",
+                    color: "brand.light.orange",
+                  }}
+                  onClick={() => {
+                    toggleTask(task.uuid).catch((err) => {
+                      console.log(err);
+                    });
+                  }}
+                  p={0}
+                >
+                  {task.completed ? (
+                    <BsXSquare size={"33px"} />
+                  ) : (
+                    <BsSquare size={"33px"} />
+                  )}
+                </Button>
+                <VStack align="flex-start" spacing={1}>
+                  <Text fontWeight="bold" color={`${fg}_h`}>
+                    {task.name}
+                  </Text>
+                  <Text color={`${fg}_h`}>{task.description}</Text>
+                </VStack>
+                <Spacer />
+                <Button
+                  aria-label="modify task"
+                  variant="ghost"
+                  colorScheme="red"
+                  size="sm"
+                  alignSelf="center"
+                  padding={0}
+                  color={fg}
+                  _hover={{
+                    border: "1px",
+                    borderStyle: "solid",
+                    borderColor: fg,
+                  }}
+                  onClick={() => {
+                    console.log("Modifying task");
                   }}
                 >
-                  <Button
-                    aria-label="toggle task status"
-                    mr={4}
-                    bg="transparent"
-                    _dark={{
-                      bg: "transparent",
-                      color: task.completed
-                        ? "brand.dark.orange"
-                        : "brand.dark.fg",
-                    }}
-                    color={
-                      task.completed ? "brand.light.orange" : "brand.light.fg"
-                    }
-                    _hover={{
-                      color: "brand.light.orange",
-                    }}
-                    onClick={() => {
-                      toggleTask(task.uuid).catch((err) => {
-                        console.log(err);
-                      });
-                    }}
-                    p={0}
-                  >
-                    {task.completed ? (
-                      <BsXSquare size={"33px"} />
-                    ) : (
-                      <BsSquare size={"33px"} />
-                    )}
-                  </Button>
-                  <VStack align="flex-start" spacing={1}>
-                    <Text fontWeight="bold" color={`${fg}_h`}>
-                      {task.name}
-                    </Text>
-                    <Text color={`${fg}_h`}>{task.description}</Text>
-                  </VStack>
-                  <Spacer />
-                  <Button
-                    aria-label="modify task"
-                    variant="ghost"
-                    colorScheme="red"
-                    size="sm"
-                    alignSelf="center"
-                    padding={0}
-                    color={fg}
-                    _hover={{
-                      border: "1px",
-                      borderStyle: "solid",
-                      borderColor: fg,
-                    }}
-                    onClick={() => {
-                      console.log("Modifying task");
-                    }}
-                  >
-                    <BsPencilSquare size={"20px"} />
-                  </Button>
-                  <Button
-                    aria-label="delete task"
-                    variant="ghost"
-                    colorScheme="red"
-                    size="sm"
-                    alignSelf="center"
-                    padding={0}
-                    color="brand.light.red"
-                    _dark={{ color: "brand.dark.red" }}
-                    _hover={{
-                      border: "1px",
-                      borderStyle: "solid",
-                      borderColor: "red.500",
-                    }}
-                    onClick={() => {
-                      setTasks((prevTasks) =>
-                        prevTasks.filter((t) => t.uuid !== task.uuid)
-                      );
-                      deleteTask(task.uuid).catch((err) => {
-                        console.log(err);
-                      });
-                    }}
-                  >
-                    <BsX size={"30px"} />
-                  </Button>
-                </Box>
-              ))}
+                  <BsPencilSquare size={"20px"} />
+                </Button>
+                <Button
+                  aria-label="delete task"
+                  variant="ghost"
+                  colorScheme="red"
+                  size="sm"
+                  alignSelf="center"
+                  padding={0}
+                  color="brand.light.red"
+                  _dark={{ color: "brand.dark.red" }}
+                  _hover={{
+                    border: "1px",
+                    borderStyle: "solid",
+                    borderColor: "red.500",
+                  }}
+                  onClick={() => {
+                    setTasks((prevTasks) =>
+                      prevTasks.filter((t) => t.uuid !== task.uuid)
+                    );
+                    deleteTask(task.uuid).catch((err) => {
+                      console.log(err);
+                    });
+                  }}
+                >
+                  <BsX size={"30px"} />
+                </Button>
+              </Box>
+            ))}
           </>
         )}
         <Button
           hidden={isLargerThan768}
-          color={fg}
           aria-label="add task mobile"
           position="fixed"
           bottom={4}
@@ -408,14 +405,8 @@ export default function Todo() {
             boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.75)",
             borderRadius: "50%",
           }}
-          _hover={{
-            bg: `brand.dark.orange`,
-            _dark: { bg: `brand.light.orange` },
-          }}
-          py="30px"
-          px={4}
+          p={6}
           bg="brand.dark.orange"
-          _dark={{ bg: "brand.dark.orange" }}
           onClick={onOpenInput}
         >
           <FaPlus size={"30px"} />

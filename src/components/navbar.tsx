@@ -149,11 +149,11 @@ export default function Navbar() {
               <Button
                 variant="solid"
                 _hover={{ bg: `${bg}3` }}
-                _active={{ bg: `${bg}1` }}
+                _active={{ bg: `${bg}2` }}
                 leftIcon={<MdChecklistRtl />}
                 size="sm"
                 color={`${fg}2`}
-                bg={`${bg}2`}
+                bg={`${bg}1`}
                 onClick={() => {
                   router.push("/app").catch((err) => console.log(err));
                 }}
@@ -190,7 +190,10 @@ export default function Navbar() {
               {user ? (
                 <Link href="/profile">{user.name}</Link>
               ) : (
-                <Link href="/login">Login</Link>
+                <>
+                  <Link href="/signup">Register</Link> |{" "}
+                  <Link href="/login">Login</Link>
+                </>
               )}
             </Text>
           </HStack>

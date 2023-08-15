@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import Navbar from "../components/navbar";
 import {
   ChakraProvider,
+  ColorModeScript,
   extendTheme,
   type ThemeConfig,
 } from "@chakra-ui/react";
@@ -102,6 +103,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <meta name="The quick and simple todo app" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <ColorModeScript initialColorMode="dark" />
       <Navbar />
       <Component {...pageProps} />
     </ChakraProvider>
