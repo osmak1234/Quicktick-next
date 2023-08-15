@@ -19,6 +19,8 @@ import {
 
 import { v4 as uuidv4 } from "uuid";
 
+import React from "react";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -122,7 +124,7 @@ export default function Todo() {
   const submitRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (/^[a-zA-Z]$/.test(e.key) && e.key !== "Tab") {
         onOpenInput();
         inputRef.current?.focus();
