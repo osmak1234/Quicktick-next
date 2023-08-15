@@ -1,8 +1,14 @@
-import type { NextPage } from 'next';
-import Link from 'next/link';
+import type { NextPage } from "next";
+import Link from "next/link";
 
 import { theme } from "./_app";
-import { useColorModeValue, ColorModeScript, Box, Heading, Text } from "@chakra-ui/react";
+import {
+  useColorModeValue,
+  ColorModeScript,
+  Box,
+  Heading,
+  Text,
+} from "@chakra-ui/react";
 
 const Custom404: NextPage = () => {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
@@ -23,7 +29,12 @@ const Custom404: NextPage = () => {
         flexDirection="column"
         p={4}
       >
-        <Heading color={red} fontSize={["3xl", "4xl", "5xl"]} mb={4} textAlign="center">
+        <Heading
+          color={red}
+          fontSize={["3xl", "4xl", "5xl"]}
+          mb={4}
+          textAlign="center"
+        >
           404 - Page Not Found
         </Heading>
         <Box as="nav">
@@ -31,7 +42,10 @@ const Custom404: NextPage = () => {
             <Box as="li" color={fg}>
               <Link href="/">
                 <Text
-                  color={useColorModeValue("brand.light.blue","brand.dark.blue")}
+                  color={useColorModeValue(
+                    "brand.light.blue",
+                    "brand.dark.blue"
+                  )}
                   _hover={{ textDecoration: "underline" }}
                   fontSize="xl"
                 >
@@ -43,7 +57,7 @@ const Custom404: NextPage = () => {
         </Box>
         <Box as="main" mt={4}>
           <Text color={fg} fontSize="lg" textAlign="center">
-           {"The page you're looking for does not exist."}
+            {"The page you're looking for does not exist."}
           </Text>
         </Box>
         <Box as="footer" mt={4}>
@@ -54,6 +68,6 @@ const Custom404: NextPage = () => {
       </Box>
     </>
   );
-}
+};
 
 export default Custom404;

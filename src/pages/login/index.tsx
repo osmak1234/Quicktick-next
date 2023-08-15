@@ -211,7 +211,7 @@ const LoginPage = () => {
                     .catch((err: Error) => {
                       setErrorMessage(err.message);
                       console.log(err);
-                    });
+                    }); //
                 }
               }}
             >
