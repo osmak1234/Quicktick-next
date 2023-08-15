@@ -12,6 +12,10 @@ export async function createUser(userData: User): Promise<Response> {
     {
       method: "POST",
       headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+
         "Content-Type": "application/json",
       },
       body: JSON.stringify(userData),
@@ -28,6 +32,11 @@ export async function logout(): Promise<void> {
   const response = await fetch("https:/quicktick-api.fly.dev/logout", {
     method: "GET",
     credentials: "include",
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
   });
 
   await handle_error(response);
@@ -41,6 +50,11 @@ export async function deleteUser(): Promise<void> {
     {
       method: "DELETE",
       credentials: "include",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
     }
   );
 
@@ -58,6 +72,11 @@ export async function authenticateUser(
     {
       method: "GET",
       credentials: "include",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
     }
   );
 

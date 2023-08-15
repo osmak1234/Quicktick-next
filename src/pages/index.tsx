@@ -52,10 +52,7 @@ export default function Home() {
                 base: "normal",
                 md: "tight",
               }}
-              color="gray.900"
-              _dark={{
-                color: "gray.100",
-              }}
+              color={fg}
             >
               All your{" "}
               <Text
@@ -86,10 +83,7 @@ export default function Home() {
                 base: "lg",
                 md: "xl",
               }}
-              color="gray.600"
-              _dark={{
-                color: "gray.300",
-              }}
+              color={`${fg}1`}
             >
               {
                 " It's a clever and elegant solution of task management for inidvidual who desire organized life."
@@ -159,8 +153,7 @@ export default function Home() {
               w="full"
               rounded="lg"
               shadow="2xl"
-              src="https://kutty.netlify.app/hero.jpg"
-              alt="Hellonext feedback boards software screenshot"
+              alt="Quicktick todo page Image"
             />
           </Box>
         </Box>
