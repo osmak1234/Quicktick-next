@@ -20,11 +20,6 @@ export async function getAllUserTasks(): Promise<Task[]> {
     {
       method: "GET",
       credentials: "include",
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
     }
   );
 
@@ -39,9 +34,6 @@ export async function createTask(taskData: TaskToCreate): Promise<void> {
     {
       method: "POST",
       headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(taskData),
@@ -60,11 +52,6 @@ export async function deleteTask(taskId: string): Promise<void> {
     {
       method: "DELETE",
       credentials: "include",
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
     }
   );
 
@@ -93,10 +80,6 @@ export async function updateTask(updateData: TaskUpdateInput): Promise<void> {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     },
     body: JSON.stringify(updateData),
     credentials: "include",
