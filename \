@@ -211,7 +211,7 @@ export default function Navbar() {
                     variant="solid"
                     color={fg}
                     bg={`${bg}1`}
-                    _hover={{ bg: `${bg}2`, color: `${fg}_h` }}
+                    _hover={{ bg: `${bg}2`, color: `${fg}2` }}
                     onClick={() => {
                       router.push("/signup").catch((err) => console.log(err));
                     }}
