@@ -8,7 +8,7 @@ export interface User {
 
 export async function createUser(userData: User): Promise<Response> {
   const response = await fetch(
-    "https:/quicktick-api.fly.dev/post/create_user",
+    "https://quicktick-api.fly.dev/post/create_user",
     {
       method: "POST",
       headers: {
@@ -25,7 +25,7 @@ export async function createUser(userData: User): Promise<Response> {
 }
 
 export async function logout(): Promise<void> {
-  const response = await fetch("https:/quicktick-api.fly.dev/logout", {
+  const response = await fetch("https://quicktick-api.fly.dev/logout", {
     method: "GET",
     credentials: "include",
   });

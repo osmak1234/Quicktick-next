@@ -16,7 +16,7 @@ export interface TaskToCreate {
 
 export async function getAllUserTasks(): Promise<Task[]> {
   const response = await fetch(
-    "https:/quicktick-api.fly.dev/get/all_user_tasks_cauth",
+    "https://quicktick-api.fly.dev/get/all_user_tasks_cauth",
     {
       method: "GET",
       headers: {
@@ -33,7 +33,7 @@ export async function getAllUserTasks(): Promise<Task[]> {
 
 export async function createTask(taskData: TaskToCreate): Promise<void> {
   const response = await fetch(
-    "https:/quicktick-api.fly.dev/post/create_task_cauth",
+    "https://quicktick-api.fly.dev/post/create_task_cauth",
     {
       method: "POST",
       headers: {
@@ -51,7 +51,7 @@ export async function createTask(taskData: TaskToCreate): Promise<void> {
 
 export async function deleteTask(taskId: string): Promise<void> {
   const response = await fetch(
-    `https:/quicktick-api.fly.dev/delete/task_cauth/${taskId}`,
+    `https://quicktick-api.fly.dev/delete/task_cauth/${taskId}`,
     {
       method: "DELETE",
       credentials: "include",
@@ -79,7 +79,7 @@ export interface TaskUpdateInput {
 }
 
 export async function updateTask(updateData: TaskUpdateInput): Promise<void> {
-  const response = await fetch("https:/quicktick-api.fly.dev/patch/task", {
+  const response = await fetch("https://quicktick-api.fly.dev/patch/task", {
     method: "PATCH",
     headers: {
       origin: "https://quicktick-next.vercel.app",
