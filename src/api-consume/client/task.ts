@@ -19,6 +19,9 @@ export async function getAllUserTasks(): Promise<Task[]> {
     "https:/quicktick-api.fly.dev/get/all_user_tasks_cauth",
     {
       method: "GET",
+      headers: {
+        origin: "https://quicktick-next.vercel.app",
+      },
       credentials: "include",
     }
   );
@@ -79,6 +82,7 @@ export async function updateTask(updateData: TaskUpdateInput): Promise<void> {
   const response = await fetch("https:/quicktick-api.fly.dev/patch/task", {
     method: "PATCH",
     headers: {
+      origin: "https://quicktick-next.vercel.app",
       "Content-Type": "application/json",
     },
     body: JSON.stringify(updateData),
