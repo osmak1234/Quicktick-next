@@ -11,7 +11,6 @@ import {
   Input,
   Spacer,
   VStack,
-  HStack,
   AlertDialog,
   AlertDialogOverlay,
   AlertDialogContent,
@@ -34,21 +33,22 @@ import {
   type TaskToCreate,
 } from "../../api-consume/client/task";
 
-import {
-  authenticateUser,
-  deleteUser,
-  createUser,
-  type User,
-} from "../../api-consume/client/user";
+import { authenticateUser, type User } from "../../api-consume/client/user";
 
 import { BsXSquare, BsX, BsSquare, BsPencilSquare } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
+import autoAnimate from "@formkit/auto-animate";
 
 export default function Todo() {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
   const fg = useColorModeValue("brand.light.fg", "brand.dark.fg");
   const orange = useColorModeValue("brand.light.orange", "brand.dark.orange");
 
+  const parent = useRef(null);
+
+  useEffect(() => {
+    parent.current && autoAnimate(parent.current);
+  }, [parent]);
   // fetch the user name
   const [user, setUser] = useState<User | null>(null);
 
@@ -74,7 +74,6 @@ export default function Todo() {
   }, [getUserData]); // Include getUserData as a dependency here
 
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [force_refetch, setForceRefetch] = useState(false); // Used to force a refetch of data from the server
   const [taskInput, setTaskInput] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
 
@@ -140,12 +139,12 @@ export default function Todo() {
         document.removeEventListener("keydown", handleKeyDown);
       }
     };
-  }, []);
+  }, [onOpenInput]);
 
   // Initialize state
   useEffect(() => {
     fetch_initial_data();
-  }, [force_refetch]);
+  }, []);
 
   const handleCreateTask = async () => {
     console.log("creating task");
@@ -157,7 +156,6 @@ export default function Todo() {
         description: "",
         uuid: taskUUID,
       };
-      await createTask(taskDataInput);
 
       const addTask: Task = {
         uuid: taskDataInput.uuid,
@@ -168,6 +166,7 @@ export default function Todo() {
       };
       setTasks([...tasks, addTask]);
       setTaskInput("");
+      await createTask(taskDataInput);
     }
   };
 
@@ -176,6 +175,7 @@ export default function Todo() {
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <Box
+        ref={parent}
         bg={bg}
         color={fg}
         display="flex"

@@ -26,7 +26,7 @@ import { useRouter } from "next/router";
 
 import * as EmailValidator from "email-validator";
 
-import { User, authenticateUser, createUser } from "~/api-consume/client/user";
+import { type User, createUser } from "~/api-consume/client/user";
 import { BsLightningFill } from "react-icons/bs";
 
 const SignUpPage = () => {

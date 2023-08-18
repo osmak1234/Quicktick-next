@@ -30,6 +30,7 @@ import { authenticateUser } from "~/api-consume/client/user";
 import { BsLightningFill } from "react-icons/bs";
 
 const LoginPage = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
   const fg = useColorModeValue("brand.light.fg", "brand.dark.fg");
   const orange = useColorModeValue("brand.light.orange", "brand.dark.orange");
@@ -38,13 +39,10 @@ const LoginPage = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [passwordError, setPasswordError] = useState(false);
   const [emailError, setEmailError] = useState(false);
-
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement | null>(null);
 
   async function login() {
@@ -119,7 +117,7 @@ const LoginPage = () => {
                 login()
                   .then(() => {
                     window.location.reload();
-                    router.push("/").catch((err) => {
+                    router.push("/app").catch((err) => {
                       console.log(err);
                     });
                   })
@@ -189,7 +187,7 @@ const LoginPage = () => {
                 login()
                   .then(() => {
                     window.location.reload();
-                    router.push("/").catch((err) => {
+                    router.push("/app").catch((err) => {
                       console.log(err);
                     });
                   })
@@ -204,7 +202,7 @@ const LoginPage = () => {
                   login()
                     .then(() => {
                       window.location.reload();
-                      router.push("/").catch((err) => {
+                      router.push("/app").catch((err) => {
                         console.log(err);
                       });
                     })

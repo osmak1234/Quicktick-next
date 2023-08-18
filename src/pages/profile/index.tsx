@@ -57,31 +57,37 @@ export default function Profile() {
           overflow="hidden"
           p={4}
         >
-          <Heading as="h1" size="2xl" color={fg}>
-            Profile
-          </Heading>
-          <Heading as="h2" size="xl" color={fg}>
-            {user?.name}
-          </Heading>
-          <Button
-            variant="solid"
-            _hover={{ bg: `${bg}3` }}
-            _active={{ bg: `${bg}1` }}
-            color={`${fg}2`}
-            bg={`${bg}2`}
-            onClick={() => {
-              logout()
-                .then(() => {
-                  window.location.reload();
-                  alert("Logged out!");
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            }}
-          >
-            Log out
-          </Button>
+          {user ? (
+            <>
+              <Heading as="h2" size="xl" color={fg}>
+                {user?.name}
+              </Heading>
+              <Heading as="h2" size="xl" color={fg}>
+                {user?.name}
+              </Heading>
+              <Button
+                variant="solid"
+                _hover={{ bg: `${bg}3` }}
+                _active={{ bg: `${bg}1` }}
+                color={`${fg}2`}
+                bg={`${bg}2`}
+                onClick={() => {
+                  logout()
+                    .then(() => {
+                      window.location.reload();
+                      alert("Logged out!");
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    });
+                }}
+              >
+                Log out
+              </Button>
+            </>
+          ) : (
+            <Heading as="h2" size="xl" color={fg}></Heading>
+          )}
         </Box>
       </Box>
     </>
