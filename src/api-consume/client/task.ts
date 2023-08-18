@@ -21,7 +21,7 @@ export async function getAllUserTasks(): Promise<Task[]> {
       method: "GET",
       headers: {
         origin: "https://quicktick-next.vercel.app",
-      },
+      }, //
       credentials: "include",
     }
   );
