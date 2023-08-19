@@ -190,35 +190,33 @@ export default function Navbar() {
               {user ? (
                 <Link href="/profile">{user.name}</Link>
               ) : (
-                <Box
-                  gap={2}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexDirection="row"
-                >
+                <>
                   <Button
                     variant="link"
-                    colorScheme="brand"
+                    size="sm"
+                    color={`${fg}`}
+                    bg={`${bg}1`}
                     onClick={() => {
-                      router.push("/signup").catch((err) => console.log(err));
+                      router.push("/login").catch((err) => console.log(err));
                     }}
                   >
-                    <Link href="/login">{"Log in "}</Link>
+                    Log in
                   </Button>
-                  <Text>|</Text>
+                  {" | "}
                   <Button
                     variant="solid"
-                    color={fg}
+                    _hover={{ bg: `${bg}3` }}
+                    _active={{ bg: `${bg}2` }}
+                    size="sm"
+                    color={`${fg}_h`}
                     bg={`${bg}1`}
-                    _hover={{ bg: `${bg}2`, color: `${fg}_h` }}
                     onClick={() => {
                       router.push("/signup").catch((err) => console.log(err));
                     }}
                   >
-                    <Link href="/signup">sign up</Link>
+                    Sign up
                   </Button>
-                </Box>
+                </>
               )}
             </Text>
           </HStack>

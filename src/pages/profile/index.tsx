@@ -62,9 +62,6 @@ export default function Profile() {
               <Heading as="h2" size="xl" color={fg}>
                 {user?.name}
               </Heading>
-              <Heading as="h2" size="xl" color={fg}>
-                {user?.name}
-              </Heading>
               <Button
                 variant="solid"
                 _hover={{ bg: `${bg}3` }}

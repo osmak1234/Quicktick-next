@@ -1,10 +1,12 @@
 import { theme } from "../_app";
+import { NewTaskModal } from "../../components/create_new_task_modal";
 import {
   useColorModeValue,
   useDisclosure,
   useMediaQuery,
   ColorModeScript,
   Box,
+  Select,
   Heading,
   Button,
   Text,
@@ -14,6 +16,12 @@ import {
   AlertDialog,
   AlertDialogOverlay,
   AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogBody,
+  AlertDialogHeader,
+  HStack,
+  Flex,
+  Textarea,
 } from "@chakra-ui/react";
 
 import { v4 as uuidv4 } from "uuid";
@@ -35,16 +43,94 @@ import {
 
 import { authenticateUser, type User } from "../../api-consume/client/user";
 
-import { BsXSquare, BsX, BsSquare, BsPencilSquare } from "react-icons/bs";
+import {
+  BsTextRight,
+  BsXSquare,
+  BsX,
+  BsSquare,
+  BsPencilSquare,
+} from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
 import autoAnimate from "@formkit/auto-animate";
 
+enum SortBy {
+  NameAscending,
+  NameDescending,
+  DateAscending,
+  DateDescending,
+  CompletedAscending,
+  CompletedDescending,
+}
+
 export default function Todo() {
+  const [isOpenTaskModal, setIsOpenTaskModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  const [editName, setEditName] = useState(false);
+  const [editDescription, setEditDescription] = useState(false);
+
+  const [editNameInput, setEditNameInput] = useState("");
+  const [editDescriptionInput, setEditDescriptionInput] = useState("");
+
+  const [submittedEdit, setSubmittedEdit] = useState<boolean | null>();
+
+  const [saveChanges, setSaveChanges] = useState(false);
+
+  const emptyRef = useRef(null);
+
+  const openTaskModal = (task: Task) => {
+    setSelectedTask(task);
+    setEditNameInput(task.name);
+    setEditDescriptionInput(task.description);
+    setIsOpenTaskModal(true);
+  };
+
+  const closeTaskModal = () => {
+    setSelectedTask(null);
+    setIsOpenTaskModal(false);
+  };
+
+  useEffect(() => {
+    if (
+      (!isOpenTaskModal && editName && !submittedEdit) ||
+      (!isOpenTaskModal && editDescription && !submittedEdit)
+    ) {
+      setEditName(false);
+      setEditDescription(false);
+
+      setSaveChanges(true);
+    } else if (!isOpenTaskModal) {
+      setEditName(false);
+      setEditDescription(false);
+    }
+  }, [isOpenTaskModal]);
+
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
   const fg = useColorModeValue("brand.light.fg", "brand.dark.fg");
   const orange = useColorModeValue("brand.light.orange", "brand.dark.orange");
 
+  const [sort, setSort] = useState<SortBy>(SortBy.NameAscending);
+
   const parent = useRef(null);
+
+  function sortTasks(sortBy: SortBy, a: Task, b: Task) {
+    switch (sortBy) {
+      case SortBy.NameAscending:
+        return a.name.localeCompare(b.name);
+      case SortBy.NameDescending:
+        return b.name.localeCompare(a.name);
+      //     case SortBy.DateAscending:
+      //       return a.created_at.localeCompare(b.created_at);
+      //     case SortBy.DateDescending:
+      //       return b.created_at.localeCompare(a.created_at);
+      case SortBy.CompletedAscending:
+        return Number(a.completed) - Number(b.completed);
+      case SortBy.CompletedDescending:
+        return Number(b.completed) - Number(a.completed);
+      default:
+        return 0;
+    }
+  }
 
   useEffect(() => {
     parent.current && autoAnimate(parent.current);
@@ -83,8 +169,6 @@ export default function Todo() {
     onClose: onCloseInput,
   } = useDisclosure();
 
-  const cancelRef = useRef(null);
-
   function fetch_initial_data() {
     // Get all all tasksA
     getAllUserTasks()
@@ -96,6 +180,9 @@ export default function Todo() {
     // Get user data
     console.log("getting user data");
   }
+  useEffect(() => {
+    fetch_initial_data();
+  }, []);
 
   const toggleTask = async (taskUUID: string) => {
     const taskToUpdate = tasks.find((task) => task.uuid === taskUUID);
@@ -120,40 +207,51 @@ export default function Todo() {
   };
 
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const submitRef = useRef<HTMLButtonElement | null>(null);
+
+  const saveChangesRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (/^[a-zA-Z]$/.test(e.key) && e.key !== "Tab") {
+      if (
+        /^[a-zA-Z]$/.test(e.key) &&
+        e.key !== "Tab" &&
+        !isOpenInput &&
+        !isOpenTaskModal
+      ) {
         onOpenInput();
         inputRef.current?.focus();
       }
     };
 
+    const handleDocumentKeyDown = (e: KeyboardEvent) => {
+      handleKeyDown(e);
+    };
+
     if (typeof document !== "undefined") {
-      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("keydown", handleDocumentKeyDown);
     }
 
     return () => {
       if (typeof document !== "undefined") {
-        document.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("keydown", handleDocumentKeyDown);
       }
     };
-  }, [onOpenInput]);
-
-  // Initialize state
-  useEffect(() => {
-    fetch_initial_data();
-  }, []);
+  }, [
+    isOpenInput,
+    isOpenTaskModal,
+    editName,
+    editDescription,
+    saveChanges,
+    onOpenInput,
+  ]);
 
   const handleCreateTask = async () => {
-    console.log("creating task");
     if (taskInput.trim() !== "") {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       const taskUUID = uuidv4();
       const taskDataInput: TaskToCreate = {
         name: taskInput,
-        description: "",
+        description: taskDescription,
         uuid: taskUUID,
       };
 
@@ -167,6 +265,7 @@ export default function Todo() {
       setTasks([...tasks, addTask]);
       setTaskInput("");
       await createTask(taskDataInput);
+      setTaskDescription("");
     }
   };
 
@@ -184,11 +283,6 @@ export default function Todo() {
         overflow="scroll"
         flexDirection="column"
         // Listen for keypresses
-        onKeyDown={(e) => {
-          if (e.key !== "Enter") {
-            inputRef.current?.focus();
-          }
-        }}
       >
         <Heading as="h1" size="2xl" color={fg}>
           Todo
@@ -197,105 +291,62 @@ export default function Todo() {
           <Text>Not logged in</Text>
         ) : (
           <>
-            <AlertDialog
-              motionPreset="slideInBottom"
-              leastDestructiveRef={cancelRef}
-              onClose={onCloseInput}
+            <NewTaskModal
               isOpen={isOpenInput}
-              isCentered
+              onClose={onCloseInput}
+              inputRef={inputRef}
+              bg={bg}
+              fg={fg}
+              orange={orange}
+              taskInput={taskInput}
+              setTaskInput={setTaskInput}
+              taskDescription={taskDescription}
+              setTaskDescription={setTaskDescription}
+              handleCreateTask={handleCreateTask}
+            />
+            <HStack
+              display="flex"
+              flexDirection="row"
+              alignItems={isLargerThan768 ? "center" : "flex-start"}
+              justifyContent={isLargerThan768 ? "center" : "space-between"}
+              w="full"
+              maxW={500}
+              mt={4}
             >
-              <AlertDialogOverlay />
-              <AlertDialogContent
+              {isLargerThan768 && (
+                <Text color={`${fg}4`} fontSize="xl" fontWeight="bold">
+                  Start typing to add a task
+                </Text>
+              )}
+              <Spacer />
+              <Select
+                value={sort}
                 bg={`${bg}_h`}
                 color={`${fg}`}
-                display={"flex"}
-                flexDirection={"column"}
-                alignItems={"center"}
-                justifyContent={"center"}
-                p={4}
+                onChange={(e) => {
+                  setSort(Number(e.target.value));
+                }}
+                borderWidth={2}
+                borderColor={`${bg}2`}
+                focusBorderColor={orange}
+                maxWidth="200px"
+                alignSelf="flex-end"
+                mt={isLargerThan768 ? 0 : 4} // Adjust the margin for smaller screens
               >
-                <Heading as="h2" size="lg" color={`${fg}_h`} pb={4}>
-                  New Task
-                </Heading>
-                <Input
-                  autoFocus={true}
-                  ref={inputRef}
-                  w="full"
-                  maxW={500}
-                  m={3}
-                  borderColor={`${bg}2`}
-                  color={`${fg}_h`}
-                  bg={`${bg}_h`}
-                  borderWidth={2}
-                  focusBorderColor={orange}
-                  value={taskInput}
-                  onChange={(e) => {
-                    setTaskInput(e.target.value);
-                  }}
-                  placeholder="Name"
-                  // on keypress enter, create task
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      onCloseInput();
-                      handleCreateTask().catch((err) => {
-                        console.log(err);
-                      });
-                    }
-                  }}
-                />
-                <Input
-                  w="full"
-                  maxW={500}
-                  m={3}
-                  tabIndex={1}
-                  borderColor={`${bg}2`}
-                  color={`${fg}_h`}
-                  bg={`${bg}_h`}
-                  borderWidth={2}
-                  focusBorderColor={orange}
-                  value={taskDescription}
-                  onChange={(e) => {
-                    setTaskDescription(e.target.value);
-                  }}
-                  placeholder="Description (optional)"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      onCloseInput();
-                      handleCreateTask().catch((err) => {
-                        console.log(err);
-                      });
-                    } else if (e.key === "Tab") {
-                      e.preventDefault();
-                      submitRef.current?.focus();
-                    }
-                  }}
-                />
-                <Button
-                  m={3}
-                  maxW={500}
-                  ref={submitRef}
-                  _hover={{ bg: `${bg}3` }}
-                  _active={{ bg: `${bg}1` }}
-                  color={`${fg}2`}
-                  bg={`${bg}2`}
-                  tabIndex={2}
-                  w="full"
-                  onClick={() => {
-                    onCloseInput();
-                    handleCreateTask().catch((err) => {
-                      console.log(err);
-                    });
-                  }}
-                >
-                  Add task
-                </Button>
-              </AlertDialogContent>
-            </AlertDialog>
-            {isLargerThan768 ? "Start typing to add a task" : ""}
+                <option value={SortBy.NameAscending}>A - Z</option>
+                <option value={SortBy.NameDescending}>Z - A</option>
+                {/* <option value={SortBy.DateAscending}>Date Ascending</option> */}
+                {/*<option value={SortBy.DateDescending}>Date Descending</option>*/}
+                <option value={SortBy.CompletedAscending}>Incompleted</option>
+                <option value={SortBy.CompletedDescending}>Completed</option>
+              </Select>
+            </HStack>
+
             {tasks
-              .sort((a, b) => Number(a.completed) - Number(b.completed))
+              .sort((a, b) => sortTasks(sort, a, b))
               .map((task) => (
                 <Box
+                  zIndex={1}
                   w="full"
                   maxW={500}
                   key={task.uuid}
@@ -305,6 +356,7 @@ export default function Todo() {
                   bg={`${bg}_h`}
                   p={4}
                   borderRadius="md"
+                  onClick={() => openTaskModal(task)}
                   mt={4}
                   boxShadow="md"
                   transition="background-color 0.2s, transform 0.2s"
@@ -315,6 +367,7 @@ export default function Todo() {
                   }}
                 >
                   <Button
+                    zIndex={2}
                     aria-label="toggle task status"
                     mr={4}
                     bg="transparent"
@@ -330,7 +383,8 @@ export default function Todo() {
                     _hover={{
                       color: "brand.light.orange",
                     }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       toggleTask(task.uuid).catch((err) => {
                         console.log(err);
                       });
@@ -344,13 +398,23 @@ export default function Todo() {
                     )}
                   </Button>
                   <VStack align="flex-start" spacing={1}>
-                    <Text fontWeight="bold" color={`${fg}_h`}>
+                    <Text
+                      fontWeight="bold"
+                      color={`${fg}_h`}
+                      // on mobile don't let the text be scrollable
+                      overflowWrap="anywhere"
+                    >
                       {task.name}
                     </Text>
-                    <Text color={`${fg}_h`}>{task.description}</Text>
+                    <Text color={`${fg}2`} overflowWrap="anywhere">
+                      {task.description.length > 100
+                        ? task.description.substring(0, 100) + "..."
+                        : task.description}
+                    </Text>
                   </VStack>
                   <Spacer />
                   <Button
+                    zIndex={2}
                     aria-label="modify task"
                     variant="ghost"
                     colorScheme="red"
@@ -363,13 +427,19 @@ export default function Todo() {
                       borderStyle: "solid",
                       borderColor: fg,
                     }}
-                    onClick={() => {
-                      console.log("Modifying task");
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditName(true);
+                      setEditNameInput(task.name);
+                      setEditDescription(true);
+                      setEditDescriptionInput(task.description);
+                      openTaskModal(task);
                     }}
                   >
                     <BsPencilSquare size={"20px"} />
                   </Button>
                   <Button
+                    zIndex={2}
                     aria-label="delete task"
                     variant="ghost"
                     colorScheme="red"
@@ -383,7 +453,8 @@ export default function Todo() {
                       borderStyle: "solid",
                       borderColor: "red.500",
                     }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setTasks((prevTasks) =>
                         prevTasks.filter((t) => t.uuid !== task.uuid)
                       );
@@ -398,27 +469,386 @@ export default function Todo() {
               ))}
           </>
         )}
+
+        <AlertDialog
+          leastDestructiveRef={emptyRef}
+          isOpen={isOpenTaskModal}
+          onClose={closeTaskModal}
+          motionPreset="slideInBottom"
+          isCentered
+        >
+          <AlertDialogOverlay />
+          {selectedTask && (
+            <AlertDialogContent
+              bg={`${bg}_h`}
+              color={`${fg}`}
+              display={"flex"}
+              flexDirection={"column"}
+              alignItems={"center"}
+              justifyContent={"center"}
+              p={4}
+            >
+              <AlertDialogHeader
+                fontSize="2xl"
+                color={`${fg}_h`}
+                textAlign="left"
+                w="full"
+                p={0}
+              >
+                <Flex justifyContent="space-between" alignItems="center">
+                  <Flex alignItems="center">
+                    <Button
+                      aria-label="toggle task status"
+                      mr={4}
+                      bg="transparent"
+                      _dark={{
+                        bg: "transparent",
+                        color: selectedTask.completed
+                          ? "brand.dark.orange"
+                          : "brand.dark.fg",
+                      }}
+                      color={
+                        selectedTask.completed
+                          ? "brand.light.orange"
+                          : "brand.light.fg"
+                      }
+                      _hover={{
+                        color: "brand.light.orange",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTask((prevTask) => {
+                          if (prevTask) {
+                            return {
+                              ...prevTask,
+                              completed: !prevTask.completed,
+                            };
+                          } else {
+                            return prevTask;
+                          }
+                        });
+
+                        toggleTask(selectedTask.uuid).catch((err) => {
+                          console.log(err);
+                        });
+                      }}
+                      p={0}
+                    >
+                      {selectedTask.completed ? (
+                        <BsXSquare size={"33px"} />
+                      ) : (
+                        <BsSquare size={"33px"} />
+                      )}
+                    </Button>
+                    <Box
+                      onClick={() => {
+                        setEditName(true);
+                        setEditNameInput(selectedTask.name);
+                      }}
+                      _hover={{
+                        cursor: "pointer",
+                      }}
+                    >
+                      {editName ? (
+                        <Input
+                          value={editNameInput}
+                          onChange={(e) => {
+                            setEditNameInput(e.target.value);
+                            setSubmittedEdit(false);
+                          }}
+                          onBlur={() => {
+                            setEditName(false);
+                            if (selectedTask.name == editNameInput) {
+                              setSubmittedEdit(true);
+                            }
+                          }}
+                        ></Input>
+                      ) : (
+                        <Text
+                          fontWeight="bold"
+                          color={`${fg}_h`}
+                          overflowWrap="anywhere"
+                        >
+                          {editNameInput}
+                        </Text>
+                      )}
+                    </Box>
+                  </Flex>
+
+                  <Spacer />
+                  <Button
+                    aria-label="delete task"
+                    variant="ghost"
+                    colorScheme="red"
+                    size="sm"
+                    alignSelf="center"
+                    padding={0}
+                    color="brand.light.red"
+                    _dark={{ color: "brand.dark.red" }}
+                    _hover={{
+                      border: "1px",
+                      borderStyle: "solid",
+                      borderColor: "red.500",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTasks((prevTasks) =>
+                        prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
+                      );
+                      closeTaskModal();
+                      deleteTask(selectedTask.uuid).catch((err) => {
+                        console.log(err);
+                      });
+                    }}
+                  >
+                    <BsX size={"30px"} />
+                  </Button>
+
+                  <Button
+                    aria-label="modify task"
+                    variant="ghost"
+                    colorScheme="red"
+                    size="sm"
+                    alignSelf="center"
+                    padding={0}
+                    color={fg}
+                    _hover={{
+                      border: "1px",
+                      borderStyle: "solid",
+                      borderColor: fg,
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditName(true);
+                      setEditNameInput(selectedTask.name);
+                      setEditDescription(true);
+                      setEditDescriptionInput(selectedTask.description);
+                    }}
+                  >
+                    <BsPencilSquare size={"20px"} />
+                  </Button>
+                </Flex>
+              </AlertDialogHeader>
+              <AlertDialogBody color={`${fg}_h`} w="full">
+                <Box
+                  onClick={() => {
+                    setEditDescription(true);
+                    setEditDescriptionInput(selectedTask.description);
+                  }}
+                  _hover={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <Flex alignItems="left" w="full">
+                    <BsTextRight size={"20px"} />
+                    {editDescription ? (
+                      <Textarea
+                        w="full"
+                        value={editDescriptionInput}
+                        onChange={(e) => {
+                          setEditDescriptionInput(e.target.value);
+                          setSubmittedEdit(false);
+                        }}
+                        onBlur={() => {
+                          setEditDescription(false);
+                          if (
+                            selectedTask.description == editDescriptionInput
+                          ) {
+                            setSubmittedEdit(true);
+                          }
+                        }}
+                      ></Textarea>
+                    ) : (
+                      <Text color={`${fg}2`} overflowWrap="anywhere">
+                        {editDescriptionInput}
+                      </Text>
+                    )}
+                  </Flex>
+                </Box>
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button
+                  onClick={closeTaskModal}
+                  bg={`${bg}2`}
+                  color={`${fg}`}
+                  _hover={{ bg: `${bg}3` }}
+                  _active={{ bg: `${bg}1` }}
+                  w="full"
+                  mr={submittedEdit !== null ? "10px" : "0px"}
+                >
+                  Close
+                </Button>
+                {submittedEdit !== null && (
+                  <Button
+                    bg={`brand.light.green`}
+                    w="full"
+                    color={`${fg}`}
+                    _hover={{ bg: "brand.light.green_dim" }}
+                    _active={{ bg: "brand.dark.green_dim" }}
+                    aria-label="save changes"
+                    alignSelf="center"
+                    padding={3}
+                    onClick={(e) => {
+                      if (submittedEdit !== null) {
+                        // submit the edited description
+                        setEditDescription(false);
+                        const taskUpdateName: TaskUpdateInput = {
+                          task_uuid: selectedTask.uuid,
+                          action: TaskAction.ChangeDesc,
+                          NewDesc: editDescriptionInput,
+                        };
+
+                        setTasks((prevTasks) =>
+                          prevTasks.map((t) => {
+                            if (t.uuid === selectedTask.uuid) {
+                              return {
+                                ...t,
+                                description: editDescriptionInput,
+                              };
+                            } else {
+                              return t;
+                            }
+                          })
+                        );
+
+                        updateTask(taskUpdateName).catch((err) => {
+                          console.log(err);
+                        });
+                        e.stopPropagation();
+
+                        // submit the edited name
+                        setEditName(false);
+                        const taskUpdateDesc: TaskUpdateInput = {
+                          task_uuid: selectedTask.uuid,
+                          action: TaskAction.RenameTask,
+                          NewName: editNameInput,
+                        };
+
+                        setTasks((prevTasks) =>
+                          prevTasks.map((t) => {
+                            if (t.uuid === selectedTask.uuid) {
+                              return {
+                                ...t,
+                                name: editNameInput,
+                              };
+                            } else {
+                              return t;
+                            }
+                          })
+                        );
+
+                        updateTask(taskUpdateDesc).catch((err) => {
+                          console.log(err);
+                        });
+
+                        setSubmittedEdit(true);
+                        setSaveChanges(false);
+                        setIsOpenTaskModal(false);
+                      } else if (editDescription) {
+                        setEditDescription(false);
+                        const taskUpdateName: TaskUpdateInput = {
+                          task_uuid: selectedTask.uuid,
+                          action: TaskAction.ChangeDesc,
+                          NewDesc: editDescriptionInput,
+                        };
+
+                        setTasks((prevTasks) =>
+                          prevTasks.map((t) => {
+                            if (t.uuid === selectedTask.uuid) {
+                              return {
+                                ...t,
+                                description: editDescriptionInput,
+                              };
+                            } else {
+                              return t;
+                            }
+                          })
+                        );
+
+                        updateTask(taskUpdateName).catch((err) => {
+                          console.log(err);
+                        });
+                        e.stopPropagation();
+
+                        setSubmittedEdit(true);
+                        setSaveChanges(false);
+                        setIsOpenTaskModal(false);
+                      } else if (editName) {
+                        // submit the edited name
+                        setEditName(false);
+                        const taskUpdateDesc: TaskUpdateInput = {
+                          task_uuid: selectedTask.uuid,
+                          action: TaskAction.RenameTask,
+                          NewName: editNameInput,
+                        };
+
+                        setTasks((prevTasks) =>
+                          prevTasks.map((t) => {
+                            if (t.uuid === selectedTask.uuid) {
+                              return {
+                                ...t,
+                                name: editNameInput,
+                              };
+                            } else {
+                              return t;
+                            }
+                          })
+                        );
+
+                        updateTask(taskUpdateDesc).catch((err) => {
+                          console.log(err);
+                        });
+                      }
+                      setSubmittedEdit(true);
+                      setSaveChanges(false);
+                      setIsOpenTaskModal(false);
+                    }}
+                  >
+                    Save
+                  </Button>
+                )}
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          )}
+        </AlertDialog>
+
+        <AlertDialog
+          leastDestructiveRef={saveChangesRef}
+          isOpen={saveChanges}
+          onClose={() => {
+            setSaveChanges(false);
+          }}
+          motionPreset="slideInBottom"
+          isCentered
+        >
+          <AlertDialogOverlay />
+          <AlertDialogContent
+            bg={`${bg}_h`}
+            color={`${fg}`}
+            display={"flex"}
+            flexDirection={"column"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            p={4}
+          >
+            <AlertDialogHeader
+              fontSize="2xl"
+              color={`${fg}_h`}
+              textAlign="left"
+              w="full"
+              p={0}
+            >
+              <Button ref={saveChangesRef}>Save</Button>
+              <Button>Discard</Button>
+            </AlertDialogHeader>
+          </AlertDialogContent>
+        </AlertDialog>
         <Button
           hidden={isLargerThan768}
-          color={fg}
-          aria-label="add task mobile"
-          position="fixed"
-          bottom={4}
-          right={4}
-          size="lg"
-          style={{
-            boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.75)",
-            borderRadius: "50%",
-          }}
-          _hover={{
-            bg: `brand.dark.orange`,
-            _dark: { bg: `brand.light.orange` },
-          }}
-          py="30px"
-          px={4}
-          bg="brand.dark.orange"
-          _dark={{ bg: "brand.dark.orange" }}
+          variant={"mobile_add_button"}
           onClick={onOpenInput}
+          borderRadius="full"
         >
           <FaPlus size={"30px"} />
         </Button>
