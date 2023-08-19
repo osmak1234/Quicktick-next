@@ -24,21 +24,17 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 
-import { v4 as uuidv4 } from "uuid";
-
 import React from "react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   getAllUserTasks,
-  createTask,
   deleteTask,
   updateTask,
   TaskAction,
   type Task,
   type TaskUpdateInput,
-  type TaskToCreate,
 } from "../../api-consume/client/task";
 
 import { authenticateUser, type User } from "../../api-consume/client/user";
@@ -160,14 +156,6 @@ export default function Todo() {
   }, [getUserData]); // Include getUserData as a dependency here
 
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [taskInput, setTaskInput] = useState("");
-  const [taskDescription, setTaskDescription] = useState("");
-
-  const {
-    isOpen: isOpenInput,
-    onOpen: onOpenInput,
-    onClose: onCloseInput,
-  } = useDisclosure();
 
   function fetch_initial_data() {
     // Get all all tasksA
@@ -206,68 +194,11 @@ export default function Todo() {
     }
   };
 
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
   const saveChangesRef = useRef<HTMLButtonElement | null>(null);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        /^[a-zA-Z]$/.test(e.key) &&
-        e.key !== "Tab" &&
-        !isOpenInput &&
-        !isOpenTaskModal
-      ) {
-        onOpenInput();
-        inputRef.current?.focus();
-      }
-    };
+  const [newTaskModal, setNewTaskModal] = useState(0);
 
-    const handleDocumentKeyDown = (e: KeyboardEvent) => {
-      handleKeyDown(e);
-    };
-
-    if (typeof document !== "undefined") {
-      document.addEventListener("keydown", handleDocumentKeyDown);
-    }
-
-    return () => {
-      if (typeof document !== "undefined") {
-        document.removeEventListener("keydown", handleDocumentKeyDown);
-      }
-    };
-  }, [
-    isOpenInput,
-    isOpenTaskModal,
-    editName,
-    editDescription,
-    saveChanges,
-    onOpenInput,
-  ]);
-
-  const handleCreateTask = async () => {
-    if (taskInput.trim() !== "") {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const taskUUID = uuidv4();
-      const taskDataInput: TaskToCreate = {
-        name: taskInput,
-        description: taskDescription,
-        uuid: taskUUID,
-      };
-
-      const addTask: Task = {
-        uuid: taskDataInput.uuid,
-        name: taskDataInput.name,
-        description: taskDataInput.description,
-        completed: false,
-        user_uuid: `${Math.floor(Math.random() * 1000000)}`,
-      };
-      setTasks([...tasks, addTask]);
-      setTaskInput("");
-      await createTask(taskDataInput);
-      setTaskDescription("");
-    }
-  };
+  // onOpen for NewTaskModal
 
   return (
     <>
@@ -292,17 +223,12 @@ export default function Todo() {
         ) : (
           <>
             <NewTaskModal
-              isOpen={isOpenInput}
-              onClose={onCloseInput}
-              inputRef={inputRef}
+              isOpenTaskModal={isOpenTaskModal}
+              setTasks={setTasks}
               bg={bg}
               fg={fg}
               orange={orange}
-              taskInput={taskInput}
-              setTaskInput={setTaskInput}
-              taskDescription={taskDescription}
-              setTaskDescription={setTaskDescription}
-              handleCreateTask={handleCreateTask}
+              newTaskModal={newTaskModal}
             />
             <HStack
               display="flex"
@@ -847,7 +773,9 @@ export default function Todo() {
         <Button
           hidden={isLargerThan768}
           variant={"mobile_add_button"}
-          onClick={onOpenInput}
+          onClick={() => {
+            setNewTaskModal(newTaskModal + 1);
+          }}
           borderRadius="full"
         >
           <FaPlus size={"30px"} />

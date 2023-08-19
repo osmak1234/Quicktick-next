@@ -1,4 +1,4 @@
-import React, { type FC } from "react";
+import React, { useState, type FC, useRef } from "react";
 import { useEffect } from "react";
 import {
   AlertDialog,
@@ -10,49 +10,71 @@ import {
   Button,
   useDisclosure,
 } from "@chakra-ui/react";
+import {
+  type TaskToCreate,
+  type Task,
+  createTask,
+} from "~/api-consume/client/task";
+
+import { v4 as uuidv4 } from "uuid";
 
 interface NewTaskModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  inputRef: React.RefObject<HTMLInputElement>;
   bg: string;
   fg: string;
   orange: string;
-  taskInput: string;
-  setTaskInput: React.Dispatch<React.SetStateAction<string>>;
-  taskDescription: string;
-  setTaskDescription: React.Dispatch<React.SetStateAction<string>>;
-  handleCreateTask: () => Promise<void>;
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  isOpenTaskModal: boolean;
+  newTaskModal: number;
 }
 
 export const NewTaskModal: FC<NewTaskModalProps> = ({
-  isOpen,
-  onClose,
-  inputRef,
   bg,
   fg,
   orange,
-  taskInput,
-  setTaskInput,
-  taskDescription,
-  setTaskDescription,
-  handleCreateTask,
+  setTasks,
+  isOpenTaskModal,
+  newTaskModal,
 }) => {
-  const {
-    isOpen: isOpenInput,
-    onOpen: onOpenInput,
-    onClose: onCloseInput,
-  } = useDisclosure();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const { isOpen: isOpen, onOpen: onOpen, onClose: onClose } = useDisclosure();
+
+  const [taskInput, setTaskInput] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+
+  const handleCreateTask = async () => {
+    if (taskInput.trim() !== "") {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      const taskUUID = uuidv4();
+      const taskDataInput: TaskToCreate = {
+        name: taskInput,
+        description: taskDescription,
+        uuid: taskUUID,
+      };
+
+      const addTask: Task = {
+        uuid: taskDataInput.uuid,
+        name: taskDataInput.name,
+        description: taskDataInput.description,
+        completed: false,
+        user_uuid: `${Math.floor(Math.random() * 1000000)}`,
+      };
+      setTasks((tasks: Array<Task>) => [...tasks, addTask]);
+      setTaskInput("");
+      await createTask(taskDataInput);
+      setTaskDescription("");
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         /^[a-zA-Z]$/.test(e.key) &&
         e.key !== "Tab" &&
-        !isOpenInput &&
+        !isOpen &&
         !isOpenTaskModal
       ) {
-        onOpenInput();
+        onOpen();
         inputRef.current?.focus();
       }
     };
@@ -70,7 +92,16 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
         document.removeEventListener("keydown", handleDocumentKeyDown);
       }
     };
-  }, [isOpenInput, isOpenTaskModal, onOpenInput]);
+  }, [isOpen, isOpenTaskModal, onOpen, inputRef]);
+
+  const [prevValue, setPrevValue] = useState(0);
+  useEffect(() => {
+    if (newTaskModal !== prevValue) {
+      setPrevValue(newTaskModal);
+      onOpen();
+      inputRef.current?.focus();
+    }
+  }, [newTaskModal, onOpen, prevValue, setPrevValue, inputRef]);
   return (
     <AlertDialog
       motionPreset="slideInBottom"
