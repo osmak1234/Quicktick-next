@@ -21,6 +21,9 @@ import {
   HStack,
   Flex,
   Textarea,
+  useDisclosure,
+  chakra,
+  Icon,
 } from "@chakra-ui/react";
 
 import React from "react";
@@ -42,6 +45,7 @@ import {
   BsTextRight,
   BsXSquare,
   BsX,
+  BsLightningFill,
   BsSquare,
   BsPencilSquare,
 } from "react-icons/bs";
@@ -75,6 +79,13 @@ export default function Todo() {
   const [user, setUser] = useState<User | null>(null);
 
   const [isLargerThan768] = useMediaQuery("(min-width: 768px)");
+
+  // error modal
+  const [isOpenErrorModal, setIsOpenErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const cancelRef = useRef<HTMLButtonElement | null>(null);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const openTaskModal = (task: Task) => {
     setSelectedTask(task);
@@ -145,10 +156,16 @@ export default function Todo() {
           setUser(userData);
         }
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         console.log(err);
+        // open error modal
+        setErrorMessage(
+          err.message + "Try refreshing." ||
+            "Something went wrong. Try refreshing"
+        );
+        onOpen();
       });
-  }, []); // No dependencies since it doesn't depend on any props or state
+  }, []);
 
   useEffect(() => {
     getUserData();
@@ -160,8 +177,14 @@ export default function Todo() {
     // Get all all tasksA
     getAllUserTasks()
       .then((tasks) => setTasks(tasks))
-      .catch((err) => {
+      .catch((err: Error) => {
         console.log(err);
+        // open error modal
+        setErrorMessage(
+          err.message + "Try refreshing." ||
+            "Something went wrong. Try refreshing"
+        );
+        onOpen();
       });
 
     // Get user data
@@ -310,8 +333,14 @@ export default function Todo() {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleTask(task.uuid).catch((err) => {
+                      toggleTask(task.uuid).catch((err: Error) => {
                         console.log(err);
+                        // open error modal
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing"
+                        );
+                        onOpen();
                       });
                     }}
                     p={0}
@@ -383,8 +412,14 @@ export default function Todo() {
                       setTasks((prevTasks) =>
                         prevTasks.filter((t) => t.uuid !== task.uuid)
                       );
-                      deleteTask(task.uuid).catch((err) => {
+                      deleteTask(task.uuid).catch((err: Error) => {
                         console.log(err);
+                        // open error modal
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing"
+                        );
+                        onOpen();
                       });
                     }}
                   >
@@ -453,8 +488,14 @@ export default function Todo() {
                           }
                         });
 
-                        toggleTask(selectedTask.uuid).catch((err) => {
+                        toggleTask(selectedTask.uuid).catch((err: Error) => {
                           console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing"
+                          );
+                          onOpen();
                         });
                       }}
                       p={0}
@@ -521,8 +562,14 @@ export default function Todo() {
                         prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
                       );
                       closeTaskModal();
-                      deleteTask(selectedTask.uuid).catch((err) => {
+                      deleteTask(selectedTask.uuid).catch((err: Error) => {
                         console.log(err);
+                        // open error modal
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing"
+                        );
+                        onOpen();
                       });
                     }}
                   >
@@ -642,8 +689,14 @@ export default function Todo() {
                           })
                         );
 
-                        updateTask(taskUpdateName).catch((err) => {
+                        updateTask(taskUpdateName).catch((err: Error) => {
                           console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing"
+                          );
+                          onOpen();
                         });
                         e.stopPropagation();
 
@@ -668,8 +721,14 @@ export default function Todo() {
                           })
                         );
 
-                        updateTask(taskUpdateDesc).catch((err) => {
+                        updateTask(taskUpdateDesc).catch((err: Error) => {
                           console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing"
+                          );
+                          onOpen();
                         });
 
                         setSubmittedEdit(true);
@@ -696,8 +755,14 @@ export default function Todo() {
                           })
                         );
 
-                        updateTask(taskUpdateName).catch((err) => {
+                        updateTask(taskUpdateName).catch((err: Error) => {
                           console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing"
+                          );
+                          onOpen();
                         });
                         e.stopPropagation();
 
@@ -726,8 +791,14 @@ export default function Todo() {
                           })
                         );
 
-                        updateTask(taskUpdateDesc).catch((err) => {
+                        updateTask(taskUpdateDesc).catch((err: Error) => {
                           console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing"
+                          );
+                          onOpen();
                         });
                       }
                       setSubmittedEdit(true);
@@ -773,6 +844,84 @@ export default function Todo() {
               <Button>Discard</Button>
             </AlertDialogHeader>
           </AlertDialogContent>
+        </AlertDialog>
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent
+              bg="transparent"
+              _dark={{
+                bg: "transparent",
+              }}
+              p={0}
+            >
+              <Flex
+                w="full"
+                bg="transparent"
+                _dark={{
+                  bg: "transparent",
+                }}
+                p={0}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Flex
+                  w="full"
+                  mx="auto"
+                  bg={`${bg}_h`}
+                  _dark={{
+                    bg: `${bg}_h`,
+                  }}
+                  shadow="md"
+                  rounded="lg"
+                  overflow="hidden"
+                >
+                  <Flex
+                    justifyContent="center"
+                    alignItems="center"
+                    w={12}
+                    bg="brand.light.red"
+                    _dark={{
+                      bg: "brand.dark.red",
+                    }}
+                  >
+                    <Icon
+                      as={BsLightningFill}
+                      color="white"
+                      _dark={{
+                        color: "white",
+                      }}
+                      boxSize={6}
+                    />
+                  </Flex>
+
+                  <Box mx={-3} py={2} px={4}>
+                    <chakra.span
+                      color={fg}
+                      _dark={{
+                        color: { fg },
+                      }}
+                      fontWeight="bold"
+                    >
+                      Error
+                    </chakra.span>
+                    <chakra.p
+                      color={fg}
+                      _dark={{
+                        color: { fg },
+                      }}
+                      fontSize="sm"
+                    >
+                      {errorMessage || "Something went wrong"}
+                    </chakra.p>
+                  </Box>
+                </Flex>
+              </Flex>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
         </AlertDialog>
         <Button
           hidden={isLargerThan768}
