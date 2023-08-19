@@ -2,7 +2,6 @@ import { theme } from "../_app";
 import { NewTaskModal } from "../../components/create_new_task_modal";
 import {
   useColorModeValue,
-  useDisclosure,
   useMediaQuery,
   ColorModeScript,
   Box,
@@ -59,20 +58,23 @@ enum SortBy {
 }
 
 export default function Todo() {
+  // Task inspect/edit modal
   const [isOpenTaskModal, setIsOpenTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-
   const [editName, setEditName] = useState(false);
   const [editDescription, setEditDescription] = useState(false);
-
   const [editNameInput, setEditNameInput] = useState("");
   const [editDescriptionInput, setEditDescriptionInput] = useState("");
-
-  const [submittedEdit, setSubmittedEdit] = useState<boolean | null>();
-
+  const [submittedEdit, setSubmittedEdit] = useState<boolean | null>(null);
   const [saveChanges, setSaveChanges] = useState(false);
 
+  // used for least destructive ref
   const emptyRef = useRef(null);
+
+  // to check if the user is logged in
+  const [user, setUser] = useState<User | null>(null);
+
+  const [isLargerThan768] = useMediaQuery("(min-width: 768px)");
 
   const openTaskModal = (task: Task) => {
     setSelectedTask(task);
@@ -99,7 +101,7 @@ export default function Todo() {
       setEditName(false);
       setEditDescription(false);
     }
-  }, [isOpenTaskModal]);
+  }, [isOpenTaskModal, editName, editDescription, submittedEdit]);
 
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
   const fg = useColorModeValue("brand.light.fg", "brand.dark.fg");
@@ -132,9 +134,6 @@ export default function Todo() {
     parent.current && autoAnimate(parent.current);
   }, [parent]);
   // fetch the user name
-  const [user, setUser] = useState<User | null>(null);
-
-  const [isLargerThan768] = useMediaQuery("(min-width: 768px)");
 
   const getUserData = useCallback(() => {
     console.log("getting user data");
@@ -585,7 +584,12 @@ export default function Todo() {
                         }}
                       ></Textarea>
                     ) : (
-                      <Text color={`${fg}2`} overflowWrap="anywhere">
+                      <Text
+                        color={`${fg}2`}
+                        // if overflow display on new line
+                        overflowWrap="anywhere"
+                        w="full"
+                      >
                         {editDescriptionInput}
                       </Text>
                     )}
