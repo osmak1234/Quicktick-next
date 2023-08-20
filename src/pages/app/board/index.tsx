@@ -169,6 +169,9 @@ export default function Board() {
                         _hover={{
                           borderColor: "gray.400",
                         }}
+                        onClick={() => {
+                          router.push(`/app/`).catch((err) => console.log(err));
+                        }}
                       >
                         <Image
                           src="/gruvbox_todo_board.jpg"

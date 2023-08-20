@@ -74,7 +74,9 @@ export default function Profile() {
                   onClick={() => {
                     logout()
                       .then(() => {
-                        window.location.reload();
+                        router.push("/").catch((err) => {
+                          console.log(err);
+                        });
                         alert("Logged out!");
                       })
                       .catch((err) => {
