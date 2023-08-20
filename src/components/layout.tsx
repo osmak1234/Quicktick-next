@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
+import React, { type ReactNode } from "react";
 
-const Layout = ({ children }) => (
+interface LayoutProps {
+  children: ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => (
   <motion.div
     initial={{ x: 300, opacity: 0 }}
     animate={{ x: 0, opacity: 1 }}
