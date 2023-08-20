@@ -27,7 +27,14 @@ const config: ThemeConfig = {
   useSystemColorMode: true,
 };
 
-export const theme = extendTheme({ colors, config, components });
+const global = {
+  body: {
+    bg: "brand.light.bg",
+    color: "brand.light.fg",
+  },
+};
+
+export const theme = extendTheme({ colors, config, components, global });
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (

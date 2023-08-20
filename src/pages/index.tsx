@@ -86,7 +86,7 @@ export default function Home() {
               color={`${fg}1`}
             >
               {
-                " It's a clever and elegant solution of task management for inidvidual who desire organized life."
+                " It's a clever and elegant solution of task management for inidviduals who desire an organized life."
               }
             </chakra.p>
             <Stack

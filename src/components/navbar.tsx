@@ -61,7 +61,13 @@ export default function Navbar() {
   // Rest of your component code
 
   return (
-    <React.Fragment>
+    <Box
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 1000,
+      }}
+    >
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <chakra.header
@@ -259,6 +265,6 @@ export default function Navbar() {
           _dark={{ bg: "brand.dark.fg3" }}
         />
       </chakra.header>
-    </React.Fragment>
+    </Box>
   );
 }

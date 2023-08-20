@@ -28,6 +28,7 @@ import * as EmailValidator from "email-validator";
 
 import { type User, createUser } from "~/api-consume/client/user";
 import { BsLightningFill } from "react-icons/bs";
+import { IoMdCheckmarkCircle } from "react-icons/io";
 
 const SignUpPage = () => {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
@@ -43,26 +44,33 @@ const SignUpPage = () => {
   const [passwordError, setPasswordError] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [nameError, setNameError] = useState(false);
+  const [stopSubmit, setStopSubmit] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement | null>(null);
 
-  const [accoundCreation, setAccountCreation] = useState(false);
+  const [accoundCreation, setAccountCreation] = useState<boolean | null>(null);
 
   async function login() {
+    setEmailError(false);
+    setStopSubmit(true);
     if (!EmailValidator.validate(email)) {
       setEmailError(true);
       if (email.length < 1) {
+        setStopSubmit(false);
         throw new Error("Email is required");
       } else {
+        setStopSubmit(false);
         throw new Error("Invalid email");
       }
     } else if (name.length < 5) {
       setNameError(false);
+      setStopSubmit(false);
       throw new Error("Name must contain least 5 characters long");
     } else if (password.length < 6) {
+      setStopSubmit(false);
       setEmailError(false);
       setPasswordError(true);
       throw new Error("Password must be at least 6 characters long");
@@ -78,6 +86,7 @@ const SignUpPage = () => {
         onOpen();
         setAccountCreation(true);
       } else {
+        setStopSubmit(false);
         throw new Error("Failed while subimitting form try again");
       }
     }
@@ -134,7 +143,6 @@ const SignUpPage = () => {
               onSubmit={() => {
                 login()
                   .then(() => {
-                    window.location.reload();
                     router.push("/").catch((err) => {
                       console.log(err);
                     });
@@ -166,7 +174,7 @@ const SignUpPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Email"
               />
               <FormLabel
                 color={`${fg}2`}
@@ -185,10 +193,10 @@ const SignUpPage = () => {
                 color={`${fg}_h`}
                 bg={`${bg}_h`}
                 borderWidth={2}
-                type="email"
+                type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Name"
               />
 
               <FormLabel
@@ -211,7 +219,7 @@ const SignUpPage = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Password"
               />
             </FormControl>
             <Button
@@ -224,11 +232,16 @@ const SignUpPage = () => {
               bg={`${bg}2`}
               w="full"
               mb={4}
+              disabled={stopSubmit}
+              isLoading={stopSubmit}
+              _loading={{
+                bg: `${bg}2`,
+                color: `${fg}2`,
+              }}
               onClick={() => {
                 login()
                   .then(() => {
-                    window.location.reload();
-                    router.push("/").catch((err) => {
+                    router.push("/app").catch((err) => {
                       console.log(err);
                     });
                   })
@@ -242,10 +255,11 @@ const SignUpPage = () => {
                 if (e.key === "Enter") {
                   login()
                     .then(() => {
-                      window.location.reload();
-                      router.push("/").catch((err) => {
-                        console.log(err);
-                      });
+                      if (accoundCreation) {
+                        router.push("/app").catch((err) => {
+                          console.log(err);
+                        });
+                      }
                     })
                     .catch((err: Error) => {
                       setErrorMessage(err.message);
@@ -270,69 +284,146 @@ const SignUpPage = () => {
                 }}
                 p={0}
               >
-                {}
-                <Flex
-                  w="full"
-                  bg="transparent"
-                  _dark={{
-                    bg: "transparent",
-                  }}
-                  p={0}
-                  alignItems="center"
-                  justifyContent="center"
-                >
+                {errorMessage.length > 0 && (
                   <Flex
                     w="full"
-                    mx="auto"
-                    bg={`${bg}_h`}
+                    bg="transparent"
                     _dark={{
-                      bg: `${bg}_h`,
+                      bg: "transparent",
                     }}
-                    shadow="md"
-                    rounded="lg"
-                    overflow="hidden"
+                    p={0}
+                    alignItems="center"
+                    justifyContent="center"
                   >
                     <Flex
-                      justifyContent="center"
-                      alignItems="center"
-                      w={12}
-                      bg="brand.light.red"
+                      w="full"
+                      mx="auto"
+                      bg={`${bg}_h`}
                       _dark={{
-                        bg: "brand.dark.red",
+                        bg: `${bg}_h`,
                       }}
+                      shadow="md"
+                      rounded="lg"
+                      overflow="hidden"
                     >
-                      <Icon
-                        as={BsLightningFill}
-                        color="white"
+                      <Flex
+                        justifyContent="center"
+                        alignItems="center"
+                        w={12}
+                        bg="brand.light.red"
                         _dark={{
-                          color: "white",
+                          bg: "brand.dark.red",
                         }}
-                        boxSize={6}
-                      />
-                    </Flex>
+                      >
+                        <Icon
+                          as={BsLightningFill}
+                          color="brand.light.fg"
+                          _dark={{
+                            color: "brand.light.fg",
+                          }}
+                          boxSize={6}
+                        />
+                      </Flex>
 
-                    <Box mx={-3} py={2} px={4}>
-                      <chakra.span
-                        color={fg}
-                        _dark={{
-                          color: { fg },
-                        }}
-                        fontWeight="bold"
-                      >
-                        Error
-                      </chakra.span>
-                      <chakra.p
-                        color={fg}
-                        _dark={{
-                          color: { fg },
-                        }}
-                        fontSize="sm"
-                      >
-                        {errorMessage || "Something went wrong"}
-                      </chakra.p>
-                    </Box>
+                      <Box mx={-3} py={2} px={4}>
+                        <chakra.span
+                          color={fg}
+                          _dark={{
+                            color: { fg },
+                          }}
+                          fontWeight="bold"
+                        >
+                          Error
+                        </chakra.span>
+                        <chakra.p
+                          color={fg}
+                          _dark={{
+                            color: { fg },
+                          }}
+                          fontSize="sm"
+                        >
+                          {errorMessage || "Something went wrong"}
+                        </chakra.p>
+                      </Box>
+                    </Flex>
                   </Flex>
-                </Flex>
+                )}
+                {accoundCreation && (
+                  <Flex
+                    w="full"
+                    bg="transparent"
+                    _dark={{
+                      bg: "transparent",
+                    }}
+                    p={0}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Flex
+                      w="full"
+                      mx="auto"
+                      bg={`${bg}_h`}
+                      _dark={{
+                        bg: `${bg}_h`,
+                      }}
+                      shadow="md"
+                      rounded="lg"
+                      overflow="hidden"
+                    >
+                      <Flex
+                        justifyContent="center"
+                        alignItems="center"
+                        w={12}
+                        bg="brand.light.green"
+                        _dark={{
+                          bg: "brand.dark.green",
+                        }}
+                      >
+                        <Icon
+                          as={IoMdCheckmarkCircle}
+                          color="brand.light.fg"
+                          _dark={{
+                            color: "brand.light.fg",
+                          }}
+                          boxSize={6}
+                        />
+                      </Flex>
+
+                      <Box mx={-3} py={2} px={4}>
+                        <Box mx={3}>
+                          <chakra.span
+                            color="green.500"
+                            _dark={{
+                              color: "green.400",
+                            }}
+                            fontWeight="bold"
+                          >
+                            Success
+                          </chakra.span>
+                          <chakra.p
+                            color="gray.600"
+                            _dark={{
+                              color: "gray.200",
+                            }}
+                            fontSize="sm"
+                          >
+                            Your account was registered!
+                          </chakra.p>
+                          <Link
+                            href="/app"
+                            about="Go to app"
+                            color="brand.light.blue_dim"
+                            style={{
+                              textDecoration: "underline",
+                            }}
+                          >
+                            To app
+                          </Link>
+                        </Box>
+                      </Box>
+                    </Flex>
+                  </Flex>
+                )}
               </AlertDialogContent>
             </AlertDialogOverlay>
           </AlertDialog>

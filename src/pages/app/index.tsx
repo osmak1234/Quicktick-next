@@ -82,6 +82,7 @@ export default function Todo() {
 
   // used for least destructive ref
   const emptyRef = useRef(null);
+  const cancelDeleteRef = useRef(null);
 
   // to check if the user is logged in
   const [user, setUser] = useState<User | null>(null);
@@ -96,6 +97,11 @@ export default function Todo() {
   const cancelRef = useRef<HTMLButtonElement | null>(null);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isOpenDelete,
+    onOpen: onOpenDelete,
+    onClose: onCloseDelete,
+  } = useDisclosure();
 
   const openTaskModal = (task: Task) => {
     setSelectedTask(task);
@@ -587,18 +593,32 @@ export default function Todo() {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setTasks((prevTasks) =>
-                          prevTasks.filter((t) => t.uuid !== task.uuid)
-                        );
-                        deleteTask(task.uuid).catch((err: Error) => {
-                          console.log(err);
-                          // open error modal
-                          setErrorMessage(
-                            err.message + "Try refreshing." ||
-                              "Something went wrong. Try refreshing"
+                        if (selectedBoard?.special == 2) {
+                          console.log("special 2");
+                          onOpenDelete();
+                        } else {
+                          console.log("just moving to archive");
+                          // special 2 is archive, so we just move it into it because it isn't already there
+                          const taskUpdateInput: TaskUpdateInput = {
+                            task_uuid: task.uuid,
+                            action: TaskAction.MoveBoard,
+                            NewBoard:
+                              boards.find((board) => board.special == 2)
+                                ?.uuid ?? "",
+                          };
+                          updateTask(taskUpdateInput).catch((err: Error) => {
+                            console.log(err);
+                            // open error modal
+                            setErrorMessage(
+                              err.message + "Try refreshing." ||
+                                "Something went wrong. Try refreshing"
+                            );
+                            onOpen();
+                          });
+                          setTasks((prevTasks) =>
+                            prevTasks.filter((t) => t.uuid !== task.uuid)
                           );
-                          onOpen();
-                        });
+                        }
                       }}
                     >
                       <BsX size={"30px"} />
@@ -737,19 +757,32 @@ export default function Todo() {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setTasks((prevTasks) =>
-                        prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
-                      );
-                      closeTaskModal();
-                      deleteTask(selectedTask.uuid).catch((err: Error) => {
-                        console.log(err);
-                        // open error modal
-                        setErrorMessage(
-                          err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing"
+                      if (selectedBoard?.special == 2) {
+                        console.log("special 2");
+                        onOpenDelete();
+                      } else {
+                        console.log("just moving to archive");
+                        // special 2 is archive, so we just move it into it because it isn't already there
+                        const taskUpdateInput: TaskUpdateInput = {
+                          task_uuid: selectedTask.uuid,
+                          action: TaskAction.MoveBoard,
+                          NewBoard:
+                            boards.find((board) => board.special == 2)?.uuid ??
+                            "",
+                        };
+                        updateTask(taskUpdateInput).catch((err: Error) => {
+                          console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing"
+                          );
+                          onOpen();
+                        });
+                        setTasks((prevTasks) =>
+                          prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
                         );
-                        onOpen();
-                      });
+                      }
                     }}
                   >
                     <BsX size={"30px"} />
@@ -1108,6 +1141,84 @@ export default function Todo() {
                   </Box>
                 </Flex>
               </Flex>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+        <AlertDialog
+          isOpen={isOpenDelete}
+          leastDestructiveRef={cancelDeleteRef}
+          onClose={onCloseDelete}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent
+              bg={`${bg}_h`}
+              color={`${fg}`}
+              display={"flex"}
+              flexDirection={"column"}
+            >
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Delete Task
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <Text
+                  color={`${fg}1`}
+                  fontSize="md"
+                  fontWeight="bold"
+                  mb={2}
+                  overflowWrap="anywhere"
+                >
+                  {"Tasks deleted from archive can't be recovered."}
+                </Text>
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button
+                  ref={cancelDeleteRef}
+                  onClick={onClose}
+                  bg={`${bg}2`}
+                  color={`${fg}`}
+                  _hover={{ bg: `${bg}3` }}
+                  _active={{ bg: `${bg}1` }}
+                  w="full"
+                  mr={submittedEdit !== null ? "10px" : "0px"}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  bg="brand.dark.red"
+                  color={`${fg}`}
+                  _hover={{ bg: "brand.light.red_dim" }}
+                  _active={{ bg: "brand.light.red" }}
+                  _dark={{
+                    bg: "brand.dark.red",
+                    _hover: { bg: "brand.dark.red_dim" },
+                    _active: { bg: "brand.light.red" },
+                  }}
+                  w="full"
+                  onClick={() => {
+                    if (!selectedTask) {
+                      return;
+                    }
+                    setTasks((prevTasks) =>
+                      prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
+                    );
+                    deleteTask(selectedTask.uuid).catch((err: Error) => {
+                      console.log(err);
+                      // open error modal
+                      setErrorMessage(
+                        err.message + "Try refreshing." ||
+                          "Something went wrong. Try refreshing"
+                      );
+                      onOpen();
+                    });
+                    onCloseDelete();
+                  }}
+                  ml={3}
+                >
+                  Delete
+                </Button>
+              </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>

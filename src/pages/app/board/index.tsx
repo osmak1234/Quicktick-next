@@ -12,19 +12,26 @@ import {
   chakra,
   useDisclosure,
   useMediaQuery,
+  SimpleGrid,
+  Image,
+  Tooltip,
 } from "@chakra-ui/react";
 
 import { theme } from "~/pages/_app";
 import { useColorModeValue, ColorModeScript } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { type User, authenticateUser } from "~/api-consume/client/user";
-import { getAllUserBoards, type Board } from "~/api-consume/client/board";
-import { BsLightningFill } from "react-icons/bs";
+import {
+  getAllUserBoards,
+  type Board,
+  deleteBoard,
+} from "~/api-consume/client/board";
+import { BsLightningFill, BsX } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
 
-import Image from "next/image";
-
 import NewBoardModal from "~/components/new_board_modal";
+
+import autoAnimate from "@formkit/auto-animate";
 
 export default function Board() {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
@@ -76,6 +83,12 @@ export default function Board() {
       });
   }, [getUserData]);
 
+  const parent = useRef(null);
+
+  useEffect(() => {
+    parent.current && autoAnimate(parent.current);
+  }, [parent]);
+
   return (
     <>
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
@@ -89,10 +102,12 @@ export default function Board() {
         newBoardModal={newBoardModal}
       />
       <Box
+        ref={parent}
         bg={bg}
         color={fg}
         display="flex"
-        height="100vh"
+        minHeight="96vh"
+        overflowX="scroll"
         flexDirection="column"
         p={4}
       >
@@ -114,12 +129,13 @@ export default function Board() {
 
         <Box
           w="full"
-          maxW="500px"
+          maxW="700px"
           mx="auto"
           bg={`${bg}_h`}
           shadow="lg"
           rounded="lg"
-          overflow="hidden"
+          overflowY="hidden"
+          overflowX="scroll"
           p={4}
         >
           {!user ? (
@@ -133,21 +149,86 @@ export default function Board() {
                   You have no boards
                 </Heading>
               ) : (
-                <>
+                <SimpleGrid
+                  columns={{ base: 1, sm: 2, md: 3, lg: 3 }}
+                  spacing={{ base: 6, sm: 8, md: 8 }}
+                  overflowX={"scroll"}
+                >
                   {boards.map((board) => (
-                    <Box key={board.uuid}>
+                    <Box
+                      key={board.uuid}
+                      bg={`${bg}_h`}
+                      shadow="lg"
+                      rounded="lg"
+                      borderWidth="1px"
+                      borderColor={`${bg}_darker`}
+                      textAlign="center"
+                      pb={4}
+                      _hover={{
+                        borderColor: "gray.400",
+                      }}
+                    >
                       <Image
                         src="/gruvbox_todo_board.jpg"
                         alt={board.name}
-                        width={200}
-                        height={200}
+                        width="100%"
+                        height="140px"
+                        objectFit="cover"
+                        style={{
+                          borderRadius: "5%",
+                        }}
                       />
-                      <Heading as="h2" size="xl" color={fg}>
+                      <Heading as="h2" size="md" color={fg} mt={2}>
                         {board.name}
                       </Heading>
+
+                      <Tooltip
+                        label="Delete board"
+                        aria-label="Delete board"
+                        openDelay={1000}
+                        variant="styled"
+                      >
+                        <Button
+                          zIndex={0}
+                          aria-label="delete board"
+                          variant="ghost"
+                          colorScheme="red"
+                          size="sm"
+                          alignSelf="center"
+                          padding={0}
+                          color="brand.light.red"
+                          _dark={{ color: "brand.dark.red" }}
+                          _hover={{
+                            border: "1px",
+                            borderStyle: "solid",
+                            borderColor: "red.500",
+                          }}
+                          onClick={() => {
+                            deleteBoard(board.uuid)
+                              .then(() => {
+                                setBoards(
+                                  boards.filter((b) => b.uuid !== board.uuid)
+                                );
+                              })
+                              .catch((err: Error) => {
+                                console.log(err);
+                                // open error NewBoardModal
+                                setErrorMessage(
+                                  err.message + "Try refreshing." ||
+                                    "Something went wrong. Try refreshing"
+                                );
+                                onOpen();
+                              });
+
+                            console.log("delete board");
+                          }}
+                        >
+                          <BsX size={"30px"} />
+                        </Button>
+                      </Tooltip>
                     </Box>
                   ))}
-                </>
+                </SimpleGrid>
               )}
             </>
           )}
@@ -185,7 +266,6 @@ export default function Board() {
                 }}
                 shadow="md"
                 rounded="lg"
-                overflow="hidden"
               >
                 <Flex
                   justifyContent="center"
