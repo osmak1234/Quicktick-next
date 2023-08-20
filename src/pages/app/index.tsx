@@ -595,6 +595,7 @@ export default function Todo() {
                         e.stopPropagation();
                         if (selectedBoard?.special == 2) {
                           console.log("special 2");
+                          setSelectedTask(task);
                           onOpenDelete();
                         } else {
                           console.log("just moving to archive");
@@ -1197,6 +1198,7 @@ export default function Todo() {
                   }}
                   w="full"
                   onClick={() => {
+                    console.log(selectedTask);
                     if (!selectedTask) {
                       return;
                     }

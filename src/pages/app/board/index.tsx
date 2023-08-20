@@ -29,6 +29,7 @@ import {
 import { BsLightningFill, BsX } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
 
+import Layout from "~/components/layout";
 import NewBoardModal from "~/components/new_board_modal";
 
 import autoAnimate from "@formkit/auto-animate";
@@ -90,237 +91,249 @@ export default function Board() {
   }, [parent]);
 
   return (
-    <>
-      {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <NewBoardModal
-        bg={bg}
-        fg={fg}
-        orange="brand.light.orange"
-        setBoards={setBoards}
-        isOpenBoardModal={false}
-        newBoardModal={newBoardModal}
-      />
-      <Box
-        ref={parent}
-        bg={bg}
-        color={fg}
-        display="flex"
-        minHeight="96vh"
-        overflowX="scroll"
-        flexDirection="column"
-        p={4}
-      >
-        <Flex
-          justifyContent="space-between"
-          alignItems="center"
-          mx="auto"
-          flexDir="column"
-        >
-          <Heading as="h1" size="2xl" color={fg}>
-            Boards
-          </Heading>
-          {isLargerThan768 && (
-            <Text fontSize="xl" color={`${fg}3`} mr={4}>
-              Start typing to create a board.
-            </Text>
-          )}
-        </Flex>
-
+    <Layout>
+      <>
+        {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
+        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+        <NewBoardModal
+          bg={bg}
+          fg={fg}
+          orange="brand.light.orange"
+          setBoards={setBoards}
+          isOpenBoardModal={false}
+          newBoardModal={newBoardModal}
+        />
         <Box
-          w="full"
-          maxW="700px"
-          mx="auto"
-          bg={`${bg}_h`}
-          shadow="lg"
-          rounded="lg"
-          overflowY="hidden"
+          ref={parent}
+          bg={bg}
+          color={fg}
+          display="flex"
+          minHeight="96vh"
           overflowX="scroll"
+          flexDirection="column"
           p={4}
         >
-          {!user ? (
-            <Heading as="h2" size="xl" color={fg}>
-              Logging in...
+          <Flex
+            justifyContent="space-between"
+            alignItems="center"
+            mx="auto"
+            flexDir="column"
+          >
+            <Heading as="h1" size="2xl" color={fg}>
+              Boards
             </Heading>
-          ) : (
-            <>
-              {boards.length === 0 ? (
-                <Heading as="h2" size="xl" color={fg}>
-                  You have no boards
-                </Heading>
-              ) : (
-                <SimpleGrid
-                  columns={{ base: 1, sm: 2, md: 3, lg: 3 }}
-                  spacing={{ base: 6, sm: 8, md: 8 }}
-                  overflowX={"scroll"}
-                >
-                  {boards.map((board) => (
-                    <Box
-                      key={board.uuid}
-                      bg={`${bg}_h`}
-                      shadow="lg"
-                      rounded="lg"
-                      borderWidth="1px"
-                      borderColor={`${bg}_darker`}
-                      textAlign="center"
-                      pb={4}
-                      _hover={{
-                        borderColor: "gray.400",
-                      }}
-                    >
-                      <Image
-                        src="/gruvbox_todo_board.jpg"
-                        alt={board.name}
-                        width="100%"
-                        height="140px"
-                        objectFit="cover"
-                        style={{
-                          borderRadius: "5%",
-                        }}
-                      />
-                      <Heading as="h2" size="md" color={fg} mt={2}>
-                        {board.name}
-                      </Heading>
+            {isLargerThan768 && (
+              <Text fontSize="xl" color={`${fg}3`} mr={4}>
+                Start typing to create a board.
+              </Text>
+            )}
+          </Flex>
 
-                      <Tooltip
-                        label="Delete board"
-                        aria-label="Delete board"
-                        openDelay={1000}
-                        variant="styled"
+          <Box
+            w="full"
+            maxW="700px"
+            mx="auto"
+            bg={`${bg}_h`}
+            shadow="lg"
+            rounded="lg"
+            overflowY="hidden"
+            overflowX="scroll"
+            p={4}
+          >
+            {!user ? (
+              <Heading as="h2" size="xl" color={fg}>
+                Logging in...
+              </Heading>
+            ) : (
+              <>
+                {boards.length === 0 ? (
+                  <Heading as="h2" size="xl" color={fg}>
+                    You have no boards
+                  </Heading>
+                ) : (
+                  <SimpleGrid
+                    columns={{ base: 1, sm: 2, md: 3, lg: 3 }}
+                    spacing={{ base: 6, sm: 8, md: 8 }}
+                    overflowX={"scroll"}
+                  >
+                    {boards.map((board) => (
+                      <Box
+                        key={board.uuid}
+                        bg={`${bg}_h`}
+                        shadow="lg"
+                        rounded="lg"
+                        borderWidth="1px"
+                        borderColor={`${bg}_darker`}
+                        textAlign="center"
+                        pb={4}
+                        _hover={{
+                          borderColor: "gray.400",
+                        }}
                       >
-                        <Button
-                          zIndex={0}
-                          aria-label="delete board"
-                          variant="ghost"
-                          colorScheme="red"
-                          size="sm"
-                          alignSelf="center"
-                          padding={0}
-                          color="brand.light.red"
-                          _dark={{ color: "brand.dark.red" }}
-                          _hover={{
-                            border: "1px",
-                            borderStyle: "solid",
-                            borderColor: "red.500",
+                        <Image
+                          src="/gruvbox_todo_board.jpg"
+                          alt={board.name}
+                          width="100%"
+                          height="140px"
+                          objectFit="cover"
+                          style={{
+                            borderRadius: "5%",
                           }}
-                          onClick={() => {
-                            deleteBoard(board.uuid)
-                              .then(() => {
-                                setBoards(
-                                  boards.filter((b) => b.uuid !== board.uuid)
-                                );
-                              })
-                              .catch((err: Error) => {
-                                console.log(err);
-                                // open error NewBoardModal
+                        />
+                        <Heading as="h2" size="md" color={fg} mt={2}>
+                          {board.name}
+                        </Heading>
+
+                        <Tooltip
+                          label="Delete board"
+                          aria-label="Delete board"
+                          openDelay={1000}
+                          variant="styled"
+                        >
+                          <Button
+                            zIndex={0}
+                            aria-label="delete board"
+                            variant="ghost"
+                            colorScheme="red"
+                            size="sm"
+                            alignSelf="center"
+                            padding={0}
+                            color="brand.light.red"
+                            _dark={{ color: "brand.dark.red" }}
+                            _hover={{
+                              border: "1px",
+                              borderStyle: "solid",
+                              borderColor: "red.500",
+                            }}
+                            onClick={() => {
+                              if (board.special == 1 || board.special == 2) {
                                 setErrorMessage(
-                                  err.message + "Try refreshing." ||
-                                    "Something went wrong. Try refreshing"
+                                  "You cannot delete this board."
                                 );
                                 onOpen();
-                              });
+                                return;
+                              } else {
+                                deleteBoard(board.uuid)
+                                  .then(() => {
+                                    setBoards(
+                                      boards.filter(
+                                        (b) => b.uuid !== board.uuid
+                                      )
+                                    );
+                                  })
+                                  .catch((err: Error) => {
+                                    console.log(err);
+                                    // open error NewBoardModal
+                                    setErrorMessage(
+                                      err.message + "Try refreshing." ||
+                                        "Something went wrong. Try refreshing"
+                                    );
+                                    onOpen();
+                                  });
 
-                            console.log("delete board");
-                          }}
-                        >
-                          <BsX size={"30px"} />
-                        </Button>
-                      </Tooltip>
-                    </Box>
-                  ))}
-                </SimpleGrid>
-              )}
-            </>
-          )}
+                                console.log("delete board");
+                              }
+                            }}
+                          >
+                            <BsX size={"30px"} />
+                          </Button>
+                        </Tooltip>
+                      </Box>
+                    ))}
+                  </SimpleGrid>
+                )}
+              </>
+            )}
+          </Box>
         </Box>
-      </Box>
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent
-            bg="transparent"
-            _dark={{
-              bg: "transparent",
-            }}
-            p={0}
-          >
-            <Flex
-              w="full"
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent
               bg="transparent"
               _dark={{
                 bg: "transparent",
               }}
               p={0}
-              alignItems="center"
-              justifyContent="center"
             >
               <Flex
                 w="full"
-                mx="auto"
-                bg={`${bg}_h`}
+                bg="transparent"
                 _dark={{
-                  bg: `${bg}_h`,
+                  bg: "transparent",
                 }}
-                shadow="md"
-                rounded="lg"
+                p={0}
+                alignItems="center"
+                justifyContent="center"
               >
                 <Flex
-                  justifyContent="center"
-                  alignItems="center"
-                  w={12}
-                  bg="brand.light.red"
+                  w="full"
+                  mx="auto"
+                  bg={`${bg}_h`}
                   _dark={{
-                    bg: "brand.dark.red",
+                    bg: `${bg}_h`,
                   }}
+                  shadow="md"
+                  rounded="lg"
                 >
-                  <Icon
-                    as={BsLightningFill}
-                    color="white"
+                  <Flex
+                    justifyContent="center"
+                    alignItems="center"
+                    w={12}
+                    bg="brand.light.red"
                     _dark={{
-                      color: "white",
+                      bg: "brand.dark.red",
                     }}
-                    boxSize={6}
-                  />
-                </Flex>
+                  >
+                    <Icon
+                      as={BsLightningFill}
+                      color="white"
+                      _dark={{
+                        color: "white",
+                      }}
+                      boxSize={6}
+                    />
+                  </Flex>
 
-                <Box mx={-3} py={2} px={4}>
-                  <chakra.span
-                    color={fg}
-                    _dark={{
-                      color: { fg },
-                    }}
-                    fontWeight="bold"
-                  >
-                    Error
-                  </chakra.span>
-                  <chakra.p
-                    color={fg}
-                    _dark={{
-                      color: { fg },
-                    }}
-                    fontSize="sm"
-                  >
-                    {errorMessage || "Something went wrong"}
-                  </chakra.p>
-                </Box>
+                  <Box mx={-3} py={2} px={4}>
+                    <chakra.span
+                      color={fg}
+                      _dark={{
+                        color: { fg },
+                      }}
+                      fontWeight="bold"
+                    >
+                      Error
+                    </chakra.span>
+                    <chakra.p
+                      color={fg}
+                      _dark={{
+                        color: { fg },
+                      }}
+                      fontSize="sm"
+                    >
+                      {errorMessage || "Something went wrong"}
+                    </chakra.p>
+                  </Box>
+                </Flex>
               </Flex>
-            </Flex>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-      <Button
-        hidden={isLargerThan768}
-        variant={"mobile_add_button"}
-        onClick={() => {
-          setNewBoardModal(newBoardModal + 1);
-        }}
-        borderRadius="full"
-      >
-        <FaPlus size={"30px"} />
-      </Button>
-    </>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+        <Button
+          hidden={isLargerThan768}
+          variant={"mobile_add_button"}
+          onClick={() => {
+            setNewBoardModal(newBoardModal + 1);
+          }}
+          borderRadius="full"
+        >
+          <FaPlus size={"30px"} />
+        </Button>
+      </>
+    </Layout>
   );
 }

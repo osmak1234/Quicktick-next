@@ -5,6 +5,7 @@ import { theme } from "../_app";
 import { useColorModeValue, ColorModeScript } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { type User, authenticateUser, logout } from "~/api-consume/client/user";
+import Layout from "~/components/layout";
 
 export default function Profile() {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
@@ -36,57 +37,60 @@ export default function Profile() {
   }, [getUserData]); // Include getUserData as a dependency here
 
   return (
-    <>
-      {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <Box
-        bg={bg}
-        color={fg}
-        display="flex"
-        height="100vh"
-        flexDirection="column"
-        p={4}
-      >
+    <Layout>
+      {" "}
+      <>
+        {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
+        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
         <Box
-          w="full"
-          maxW="500px"
-          mx="auto"
-          bg={`${bg}_h`}
-          shadow="lg"
-          rounded="lg"
-          overflow="hidden"
+          bg={bg}
+          color={fg}
+          display="flex"
+          height="100vh"
+          flexDirection="column"
           p={4}
         >
-          {user ? (
-            <>
-              <Heading as="h2" size="xl" color={fg}>
-                {user?.name}
-              </Heading>
-              <Button
-                variant="solid"
-                _hover={{ bg: `${bg}3` }}
-                _active={{ bg: `${bg}1` }}
-                color={`${fg}2`}
-                bg={`${bg}2`}
-                onClick={() => {
-                  logout()
-                    .then(() => {
-                      window.location.reload();
-                      alert("Logged out!");
-                    })
-                    .catch((err) => {
-                      console.log(err);
-                    });
-                }}
-              >
-                Log out
-              </Button>
-            </>
-          ) : (
-            <Heading as="h2" size="xl" color={fg}></Heading>
-          )}
+          <Box
+            w="full"
+            maxW="500px"
+            mx="auto"
+            bg={`${bg}_h`}
+            shadow="lg"
+            rounded="lg"
+            overflow="hidden"
+            p={4}
+          >
+            {user ? (
+              <>
+                <Heading as="h2" size="xl" color={fg}>
+                  {user?.name}
+                </Heading>
+                <Button
+                  variant="solid"
+                  _hover={{ bg: `${bg}3` }}
+                  _active={{ bg: `${bg}1` }}
+                  color={`${fg}2`}
+                  bg={`${bg}2`}
+                  onClick={() => {
+                    logout()
+                      .then(() => {
+                        window.location.reload();
+                        alert("Logged out!");
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                      });
+                  }}
+                >
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <Heading as="h2" size="xl" color={fg}></Heading>
+            )}
+          </Box>
         </Box>
-      </Box>
-    </>
+      </>
+    </Layout>
   );
 }

@@ -4,12 +4,15 @@ import { components } from "../styles/chakra-ui";
 import { lightColors, darkColors } from "../styles/color";
 import Navbar from "../components/navbar";
 import {
+  Box,
   ChakraProvider,
   ColorModeScript,
   extendTheme,
   type ThemeConfig,
 } from "@chakra-ui/react";
 import Head from "next/head";
+
+import { AnimatePresence } from "framer-motion";
 
 const colors = {
   brand: {
@@ -39,14 +42,16 @@ export const theme = extendTheme({ colors, config, components, global });
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ChakraProvider theme={theme}>
-      <Head>
-        <title>Quicktick</title>
-        <meta name="The quick and simple todo app" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <ColorModeScript initialColorMode="dark" />
-      <Navbar />
-      <Component {...pageProps} />
+      <AnimatePresence mode="wait" initial={false}>
+        <Head>
+          <title>Quicktick</title>
+          <meta name="The quick and simple todo app" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+        <ColorModeScript initialColorMode="dark" />
+        <Navbar />
+        <Component {...pageProps} />
+      </AnimatePresence>
     </ChakraProvider>
   );
 };

@@ -24,6 +24,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { type User, authenticateUser } from "~/api-consume/client/user";
+import autoAnimate from "@formkit/auto-animate";
 
 export default function Navbar() {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
@@ -37,6 +38,11 @@ export default function Navbar() {
 
   // fetch the user name
   const [user, setUser] = useState<User | null>(null);
+
+  const parent = React.useRef(null);
+  useEffect(() => {
+    parent.current && autoAnimate(parent.current);
+  }, [parent]);
 
   const getUserData = useCallback(() => {
     console.log("getting user data");
@@ -67,6 +73,7 @@ export default function Navbar() {
         top: 0,
         zIndex: 1000,
       }}
+      ref={parent}
     >
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
@@ -194,7 +201,7 @@ export default function Navbar() {
                   router.push("/app/board").catch((err) => console.log(err));
                 }}
               >
-                <Link href="/board">Boards</Link>
+                <Link href="/app/board">Boards</Link>
               </Button>
             </HStack>
           </HStack>
