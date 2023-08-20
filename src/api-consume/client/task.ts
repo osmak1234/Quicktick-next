@@ -6,17 +6,19 @@ export interface Task {
   description: string;
   completed: boolean;
   user_uuid: string;
+  board_uuid: string;
 }
 
 export interface TaskToCreate {
   name: string;
   description: string;
   uuid: string;
+  board_uuid: string;
 }
 
 export async function getAllUserTasks(): Promise<Task[]> {
   const response = await fetch(
-    "https://quicktick-api.fly.dev/get/all_user_tasks_cauth",
+    "https://quicktick-api.fly.dev/get/all_user_tasks",
     {
       method: "GET",
       headers: {
@@ -33,7 +35,7 @@ export async function getAllUserTasks(): Promise<Task[]> {
 
 export async function createTask(taskData: TaskToCreate): Promise<void> {
   const response = await fetch(
-    "https://quicktick-api.fly.dev/post/create_task_cauth",
+    "https://quicktick-api.fly.dev/post/create_task",
     {
       method: "POST",
       headers: {
@@ -49,9 +51,27 @@ export async function createTask(taskData: TaskToCreate): Promise<void> {
   return;
 }
 
+export async function getBoardTasks(boardId: string): Promise<Task[]> {
+  const response = await fetch(
+    `https://quicktick-api.fly.dev/get/all_board_tasks/${boardId}`,
+    {
+      method: "GET",
+      headers: {
+        origin: "https://quicktick-next.vercel.app",
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+  await handle_error(response);
+
+  const tasks: Task[] = (await response.json()) as Task[];
+  return tasks;
+}
+
 export async function deleteTask(taskId: string): Promise<void> {
   const response = await fetch(
-    `https://quicktick-api.fly.dev/delete/task_cauth/${taskId}`,
+    `https://quicktick-api.fly.dev/delete/task/${taskId}`,
     {
       method: "DELETE",
       credentials: "include",
@@ -68,6 +88,7 @@ export enum TaskAction {
   ChangeDesc = "ChangeDesc",
   ToggleTask = "ToggleTask",
   ChangeOrder = "ChangeOrder",
+  MoveBoard = "MoveBoard",
 }
 
 export interface TaskUpdateInput {
@@ -76,6 +97,7 @@ export interface TaskUpdateInput {
   NewName?: string;
   NewDesc?: string;
   ChangeOrder?: number;
+  NewBoard?: string;
 }
 
 export async function updateTask(updateData: TaskUpdateInput): Promise<void> {

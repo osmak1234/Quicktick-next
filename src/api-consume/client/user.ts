@@ -36,13 +36,10 @@ export async function logout(): Promise<void> {
 }
 
 export async function deleteUser(): Promise<void> {
-  const response = await fetch(
-    "https://quicktick-api.fly.dev/delete/user_cauth",
-    {
-      method: "DELETE",
-      credentials: "include",
-    }
-  );
+  const response = await fetch("https://quicktick-api.fly.dev/delete/user", {
+    method: "DELETE",
+    credentials: "include",
+  });
 
   await handle_error(response);
 

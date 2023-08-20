@@ -13,7 +13,8 @@ import {
   CloseButton,
   VisuallyHidden,
 } from "@chakra-ui/react";
-import { AiOutlineMenu, AiFillHome } from "react-icons/ai";
+import { AiOutlineMenu } from "react-icons/ai";
+import { BiSolidDashboard } from "react-icons/bi";
 import { MdChecklistRtl } from "react-icons/md";
 import { FaMoon, FaSun } from "react-icons/fa";
 
@@ -120,6 +121,21 @@ export default function Navbar() {
                 >
                   <Link href="/app">To-Do</Link>
                 </Button>
+                <Button
+                  w="full"
+                  variant="solid"
+                  colorScheme="brand"
+                  leftIcon={<BiSolidDashboard />}
+                  _hover={{ bg: `${bg}3` }}
+                  _active={{ bg: `${bg}1` }}
+                  color={`${fg}2`}
+                  bg={`${bg}2`}
+                  onClick={() => {
+                    router.push("/app/board").catch((err) => console.log(err));
+                  }}
+                >
+                  <Link href="/app/board">Boards</Link>
+                </Button>
                 <Box
                   mt={2}
                   w="full"
@@ -159,6 +175,20 @@ export default function Navbar() {
                 }}
               >
                 <Link href="/app">To-Do</Link>
+              </Button>
+              <Button
+                variant="solid"
+                _hover={{ bg: `${bg}3` }}
+                _active={{ bg: `${bg}2` }}
+                leftIcon={<BiSolidDashboard />}
+                size="sm"
+                color={`${fg}2`}
+                bg={`${bg}1`}
+                onClick={() => {
+                  router.push("/app/board").catch((err) => console.log(err));
+                }}
+              >
+                <Link href="/board">Boards</Link>
               </Button>
             </HStack>
           </HStack>

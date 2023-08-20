@@ -6,67 +6,57 @@ import {
   AlertDialogContent,
   Heading,
   Input,
-  Textarea,
   Button,
   useDisclosure,
 } from "@chakra-ui/react";
-import {
-  type TaskToCreate,
-  type Task,
-  createTask,
-} from "~/api-consume/client/task";
 
 import { v4 as uuidv4 } from "uuid";
+import {
+  type Board,
+  type BoardToCreate,
+  createBoard,
+} from "~/api-consume/client/board";
 
 interface NewTaskModalProps {
   bg: string;
   fg: string;
   orange: string;
-  boardUUID: string;
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-  isOpenTaskModal: boolean;
-  newTaskModal: number;
+  setBoards: React.Dispatch<React.SetStateAction<Board[]>>;
+  isOpenBoardModal: boolean;
+  newBoardModal: number;
 }
 
-export const NewTaskModal: FC<NewTaskModalProps> = ({
+export const NewBoardModal: FC<NewTaskModalProps> = ({
   bg,
   fg,
   orange,
-  boardUUID,
-  setTasks,
-  isOpenTaskModal,
-  newTaskModal,
+  setBoards,
+  isOpenBoardModal,
+  newBoardModal,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { isOpen: isOpen, onOpen: onOpen, onClose: onClose } = useDisclosure();
 
-  const [taskInput, setTaskInput] = useState("");
-  const [taskDescription, setTaskDescription] = useState("");
+  const [boardInput, setBoardInput] = useState("");
 
-  const handleCreateTask = async () => {
-    if (taskInput.trim() !== "") {
+  const handleCreateBoard = async () => {
+    if (boardInput.trim() !== "") {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const taskUUID = uuidv4();
-      const taskDataInput: TaskToCreate = {
-        name: taskInput,
-        description: taskDescription,
-        uuid: taskUUID,
-        board_uuid: boardUUID,
+      const boardUUID = uuidv4();
+      const boardDataInput: BoardToCreate = {
+        name: boardInput,
+        uuid: boardUUID,
       };
 
-      const addTask: Task = {
-        uuid: taskDataInput.uuid,
-        name: taskDataInput.name,
-        description: taskDataInput.description,
-        board_uuid: taskDataInput.board_uuid,
-        completed: false,
+      const addBoard: Board = {
+        uuid: boardDataInput.uuid,
+        name: boardDataInput.name,
         user_uuid: `${Math.floor(Math.random() * 1000000)}`,
       };
-      setTasks((tasks: Array<Task>) => [...tasks, addTask]);
-      setTaskInput("");
-      await createTask(taskDataInput);
-      setTaskDescription("");
+      setBoards((boards: Array<Board>) => [...boards, addBoard]);
+      setBoardInput("");
+      await createBoard(boardDataInput);
     }
   };
 
@@ -76,7 +66,7 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
         /^[a-zA-Z]$/.test(e.key) &&
         e.key !== "Tab" &&
         !isOpen &&
-        !isOpenTaskModal
+        !isOpenBoardModal
       ) {
         onOpen();
         inputRef.current?.focus();
@@ -96,16 +86,16 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
         document.removeEventListener("keydown", handleDocumentKeyDown);
       }
     };
-  }, [isOpen, isOpenTaskModal, onOpen, inputRef]);
+  }, [isOpen, isOpenBoardModal, onOpen, inputRef]);
 
   const [prevValue, setPrevValue] = useState(0);
   useEffect(() => {
-    if (newTaskModal !== prevValue) {
-      setPrevValue(newTaskModal);
+    if (newBoardModal !== prevValue) {
+      setPrevValue(newBoardModal);
       onOpen();
       inputRef.current?.focus();
     }
-  }, [newTaskModal, onOpen, prevValue, setPrevValue, inputRef]);
+  }, [newBoardModal, onOpen, prevValue, setPrevValue, inputRef]);
   return (
     <AlertDialog
       motionPreset="slideInBottom"
@@ -125,7 +115,7 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
         p={4}
       >
         <Heading as="h2" size="lg" color={`${fg}_h`} pb={4}>
-          New Task
+          New Board
         </Heading>
         <Input
           ref={inputRef}
@@ -137,43 +127,18 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
           bg={`${bg}_h`}
           borderWidth={2}
           focusBorderColor={orange}
-          value={taskInput}
+          value={boardInput}
           maxLength={190}
           onChange={(e) => {
-            setTaskInput(e.target.value);
+            setBoardInput(e.target.value);
           }}
           placeholder="Name"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               onClose();
-              handleCreateTask().catch((err) => {
+              handleCreateBoard().catch((err) => {
                 console.log(err);
               });
-            }
-          }}
-        />
-        <Textarea
-          w="full"
-          maxW={500}
-          m={3}
-          tabIndex={1}
-          borderColor={`${bg}2`}
-          color={`${fg}_h`}
-          bg={`${bg}_h`}
-          borderWidth={2}
-          focusBorderColor={orange}
-          value={taskDescription}
-          onChange={(e) => {
-            setTaskDescription(e.target.value);
-          }}
-          placeholder="Description (optional)"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              onClose();
-              handleCreateTask().catch((err) => {
-                console.log(err);
-              });
-              setTaskDescription("");
             }
           }}
         />
@@ -188,16 +153,16 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
           w="full"
           onClick={() => {
             onClose();
-            handleCreateTask().catch((err) => {
+            handleCreateBoard().catch((err) => {
               console.log(err);
             });
           }}
         >
-          Add task
+          Create board
         </Button>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
 
-export default NewTaskModal;
+export default NewBoardModal;

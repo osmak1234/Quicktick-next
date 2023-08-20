@@ -254,7 +254,7 @@ const SignUpPage = () => {
                 }
               }}
             >
-              Log In
+              Sign Up
             </Button>
           </Box>
           <AlertDialog
@@ -336,7 +336,10 @@ const SignUpPage = () => {
               </AlertDialogContent>
             </AlertDialogOverlay>
           </AlertDialog>
-          <Flex justifyContent="center" alignItems="center">
+          <Flex justifyContent="center" alignItems="center" flexDir="column">
+            <Text color={`${fg}4`}>
+              {"Passwords are ecrypted before storing."}
+            </Text>
             <Text color={fg} mr={2}>
               {" Already have an account?"}
             </Text>

@@ -24,6 +24,7 @@ import {
   useDisclosure,
   chakra,
   Icon,
+  Tooltip,
 } from "@chakra-ui/react";
 
 import React from "react";
@@ -37,6 +38,7 @@ import {
   TaskAction,
   type Task,
   type TaskUpdateInput,
+  getBoardTasks,
 } from "../../api-consume/client/task";
 
 import { authenticateUser, type User } from "../../api-consume/client/user";
@@ -50,7 +52,11 @@ import {
   BsPencilSquare,
 } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
+import { TbArrowMoveRight } from "react-icons/tb";
+
 import autoAnimate from "@formkit/auto-animate";
+
+import { getAllUserBoards, type Board } from "~/api-consume/client/board";
 
 enum SortBy {
   NameAscending,
@@ -72,6 +78,8 @@ export default function Todo() {
   const [submittedEdit, setSubmittedEdit] = useState<boolean | null>(null);
   const [saveChanges, setSaveChanges] = useState(false);
 
+  const [boards, setBoards] = useState<Board[]>([]);
+
   // used for least destructive ref
   const emptyRef = useRef(null);
 
@@ -79,6 +87,8 @@ export default function Todo() {
   const [user, setUser] = useState<User | null>(null);
 
   const [isLargerThan768] = useMediaQuery("(min-width: 768px)");
+
+  const [initialLoad, setInitialLoad] = useState(true);
 
   // error modal
   const [isOpenErrorModal, setIsOpenErrorModal] = useState(false);
@@ -95,24 +105,49 @@ export default function Todo() {
   };
 
   const closeTaskModal = () => {
-    setSelectedTask(null);
     setIsOpenTaskModal(false);
   };
 
+  const [selectedBoard, setSelectedBoard] = useState<Board>();
+
   useEffect(() => {
-    if (
-      (!isOpenTaskModal && editName && !submittedEdit) ||
-      (!isOpenTaskModal && editDescription && !submittedEdit)
-    ) {
+    if (!isOpenTaskModal && submittedEdit !== null && !submittedEdit) {
       setEditName(false);
       setEditDescription(false);
 
       setSaveChanges(true);
-    } else if (!isOpenTaskModal) {
-      setEditName(false);
-      setEditDescription(false);
     }
-  }, [isOpenTaskModal, editName, editDescription, submittedEdit]);
+  }, [isOpenTaskModal, submittedEdit]);
+
+  useEffect(() => {
+    if (selectedBoard) {
+      if (selectedBoard.special == 1) {
+        getAllUserTasks()
+          .then((tasks) => setTasks(tasks))
+          .catch((err: Error) => {
+            console.log(err);
+            // open error modal
+            setErrorMessage(
+              err.message + "Try refreshing." ||
+                "Something went wrong. Try refreshing"
+            );
+            onOpen();
+          });
+      } else {
+        getBoardTasks(selectedBoard.uuid)
+          .then((tasks) => setTasks(tasks))
+          .catch((err: Error) => {
+            console.log(err);
+            // open error modal
+            setErrorMessage(
+              err.message + "Try refreshing." ||
+                "Something went wrong. Try refreshing"
+            );
+            onOpen();
+          });
+      }
+    }
+  }, [selectedBoard]);
 
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
   const fg = useColorModeValue("brand.light.fg", "brand.dark.fg");
@@ -186,9 +221,25 @@ export default function Todo() {
         );
         onOpen();
       });
-
-    // Get user data
-    console.log("getting user data");
+    getAllUserBoards()
+      .then((fetchedBoards) => {
+        if (initialLoad) {
+          setBoards((prevBoards) => [...prevBoards, ...fetchedBoards]);
+          setInitialLoad(false);
+        } else {
+          setBoards(fetchedBoards);
+        }
+      })
+      .catch((err: Error) => {
+        console.log(err);
+        // open error modal
+        setErrorMessage(
+          err.message + "Try refreshing." ||
+            "Something went wrong. Try refreshing"
+        );
+        onOpen();
+      });
+    console.log("fetched initial data");
   }
   useEffect(() => {
     fetch_initial_data();
@@ -247,6 +298,7 @@ export default function Todo() {
             <NewTaskModal
               isOpenTaskModal={isOpenTaskModal}
               setTasks={setTasks}
+              boardUUID={selectedBoard ? selectedBoard.uuid : ""}
               bg={bg}
               fg={fg}
               orange={orange}
@@ -267,6 +319,33 @@ export default function Todo() {
                 </Text>
               )}
               <Spacer />
+
+              <Select
+                value={selectedBoard ? selectedBoard.uuid : ""}
+                bg={`${bg}_h`}
+                color={`${fg}`}
+                onChange={(e) => {
+                  const selectedBoardUUID = e.target.value;
+                  const foundBoard = boards.find(
+                    (board) => board.uuid === selectedBoardUUID
+                  );
+                  if (foundBoard) {
+                    setSelectedBoard(foundBoard);
+                  }
+                }}
+                borderWidth={2}
+                borderColor={`${bg}2`}
+                focusBorderColor={orange}
+                maxWidth="150px"
+                alignSelf="flex-end"
+                mt={isLargerThan768 ? 0 : 4}
+              >
+                {boards.map((board) => (
+                  <option key={board.uuid} value={board.uuid}>
+                    {board.name}
+                  </option>
+                ))}
+              </Select>
               <Select
                 value={sort}
                 bg={`${bg}_h`}
@@ -277,7 +356,7 @@ export default function Todo() {
                 borderWidth={2}
                 borderColor={`${bg}2`}
                 focusBorderColor={orange}
-                maxWidth="200px"
+                maxWidth="150px"
                 alignSelf="flex-end"
                 mt={isLargerThan768 ? 0 : 4} // Adjust the margin for smaller screens
               >
@@ -367,64 +446,164 @@ export default function Todo() {
                     </Text>
                   </VStack>
                   <Spacer />
-                  <Button
-                    zIndex={2}
-                    aria-label="modify task"
-                    variant="ghost"
-                    colorScheme="red"
-                    size="sm"
-                    alignSelf="center"
-                    padding={0}
-                    color={fg}
-                    _hover={{
-                      border: "1px",
-                      borderStyle: "solid",
-                      borderColor: fg,
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditName(true);
-                      setEditNameInput(task.name);
-                      setEditDescription(true);
-                      setEditDescriptionInput(task.description);
-                      openTaskModal(task);
-                    }}
+                  <Tooltip
+                    label="Move task to another board"
+                    aria-label="Move task to another board"
+                    openDelay={1000}
+                    variant="styled"
                   >
-                    <BsPencilSquare size={"20px"} />
-                  </Button>
-                  <Button
-                    zIndex={2}
-                    aria-label="delete task"
-                    variant="ghost"
-                    colorScheme="red"
-                    size="sm"
-                    alignSelf="center"
-                    padding={0}
-                    color="brand.light.red"
-                    _dark={{ color: "brand.dark.red" }}
-                    _hover={{
-                      border: "1px",
-                      borderStyle: "solid",
-                      borderColor: "red.500",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setTasks((prevTasks) =>
-                        prevTasks.filter((t) => t.uuid !== task.uuid)
-                      );
-                      deleteTask(task.uuid).catch((err: Error) => {
-                        console.log(err);
-                        // open error modal
-                        setErrorMessage(
-                          err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing"
+                    <Box position="relative">
+                      <Select
+                        zIndex={2}
+                        variant="unstyled"
+                        p={0}
+                        w="32px"
+                        h="32px"
+                        bg={`${bg}_h`}
+                        icon={<> </>}
+                        color={fg}
+                        borderWidth={0}
+                        _hover={{
+                          border: "1px",
+                          borderStyle: "solid",
+                          borderColor: fg,
+                        }}
+                        value={""}
+                        focusBorderColor={orange}
+                        alignSelf="center"
+                        mt={isLargerThan768 ? 0 : 4}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          const selectedBoardUUID = e.target.value;
+                          console.log(selectedBoardUUID);
+
+                          const foundBoard = boards.find(
+                            (board) => board.uuid === selectedBoardUUID
+                          );
+                          if (foundBoard) {
+                            const taskUpdateInput: TaskUpdateInput = {
+                              task_uuid: task.uuid,
+                              action: TaskAction.MoveBoard,
+                              NewBoard: selectedBoardUUID,
+                            };
+                            updateTask(taskUpdateInput).catch((err: Error) => {
+                              console.log(err);
+                              // open error modal
+                              setErrorMessage(
+                                err.message + "Try refreshing." ||
+                                  "Something went wrong. Try refreshing"
+                              );
+                              onOpen();
+                            });
+                            setTasks((prevTasks) =>
+                              prevTasks.filter(
+                                (t) => t.uuid !== taskUpdateInput.task_uuid
+                              )
+                            );
+                          }
+                        }}
+                      >
+                        <option value={""} disabled hidden defaultChecked>
+                          {" "}
+                        </option>
+                        {boards
+                          .filter((board) => board.uuid !== selectedBoard?.uuid)
+                          .map((board) => (
+                            <option key={board.uuid} value={board.uuid}>
+                              {board.name}
+                            </option>
+                          ))}
+                      </Select>
+                      <TbArrowMoveRight
+                        size="20px"
+                        style={{
+                          pointerEvents: "none",
+                          zIndex: 5,
+                          position: "absolute",
+                          left: "7px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                        }}
+                      />
+                    </Box>
+                  </Tooltip>
+
+                  <Tooltip
+                    label="Edit task"
+                    aria-label="Edit task"
+                    openDelay={1000}
+                    variant="styled"
+                  >
+                    <Button
+                      zIndex={2}
+                      aria-label="modify task"
+                      variant="ghost"
+                      colorScheme="red"
+                      size="sm"
+                      alignSelf="center"
+                      padding={0}
+                      color={fg}
+                      _hover={{
+                        border: "1px",
+                        borderStyle: "solid",
+                        borderColor: fg,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditName(true);
+                        setEditNameInput(task.name);
+                        setEditDescription(true);
+                        setEditDescriptionInput(task.description);
+                        openTaskModal(task);
+                      }}
+                    >
+                      <BsPencilSquare size={"20px"} />
+                    </Button>
+                  </Tooltip>
+
+                  <Tooltip
+                    label="Delete task"
+                    aria-label="Delete task"
+                    openDelay={1000}
+                    variant="styled"
+                  >
+                    <Button
+                      zIndex={2}
+                      aria-label="delete task"
+                      variant="ghost"
+                      colorScheme="red"
+                      size="sm"
+                      alignSelf="center"
+                      padding={0}
+                      color="brand.light.red"
+                      _dark={{ color: "brand.dark.red" }}
+                      _hover={{
+                        border: "1px",
+                        borderStyle: "solid",
+                        borderColor: "red.500",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTasks((prevTasks) =>
+                          prevTasks.filter((t) => t.uuid !== task.uuid)
                         );
-                        onOpen();
-                      });
-                    }}
-                  >
-                    <BsX size={"30px"} />
-                  </Button>
+                        deleteTask(task.uuid).catch((err: Error) => {
+                          console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing"
+                          );
+                          onOpen();
+                        });
+                      }}
+                    >
+                      <BsX size={"30px"} />
+                    </Button>
+                  </Tooltip>
                 </Box>
               ))}
           </>
@@ -667,141 +846,59 @@ export default function Todo() {
                     alignSelf="center"
                     padding={3}
                     onClick={(e) => {
-                      if (submittedEdit !== null) {
-                        // submit the edited description
-                        setEditDescription(false);
-                        const taskUpdateName: TaskUpdateInput = {
-                          task_uuid: selectedTask.uuid,
-                          action: TaskAction.ChangeDesc,
-                          NewDesc: editDescriptionInput,
-                        };
+                      // submit the edited description
+                      setEditDescription(false);
+                      const taskUpdateName: TaskUpdateInput = {
+                        task_uuid: selectedTask.uuid,
+                        action: TaskAction.ChangeDesc,
+                        NewDesc: editDescriptionInput,
+                      };
 
-                        setTasks((prevTasks) =>
-                          prevTasks.map((t) => {
-                            if (t.uuid === selectedTask.uuid) {
-                              return {
-                                ...t,
-                                description: editDescriptionInput,
-                              };
-                            } else {
-                              return t;
-                            }
-                          })
+                      setTasks((prevTasks) =>
+                        prevTasks.map((t) => {
+                          if (t.uuid === selectedTask.uuid) {
+                            return {
+                              ...t,
+                              name: editNameInput,
+                              description: editDescriptionInput,
+                            };
+                          } else {
+                            return t;
+                          }
+                        })
+                      );
+
+                      updateTask(taskUpdateName).catch((err: Error) => {
+                        console.log(err);
+                        // open error modal
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing"
                         );
+                        onOpen();
+                      });
+                      e.stopPropagation();
 
-                        updateTask(taskUpdateName).catch((err: Error) => {
-                          console.log(err);
-                          // open error modal
-                          setErrorMessage(
-                            err.message + "Try refreshing." ||
-                              "Something went wrong. Try refreshing"
-                          );
-                          onOpen();
-                        });
-                        e.stopPropagation();
+                      // submit the edited name
+                      setEditName(false);
 
-                        // submit the edited name
-                        setEditName(false);
-                        const taskUpdateDesc: TaskUpdateInput = {
-                          task_uuid: selectedTask.uuid,
-                          action: TaskAction.RenameTask,
-                          NewName: editNameInput,
-                        };
+                      const taskUpdateDesc: TaskUpdateInput = {
+                        task_uuid: selectedTask.uuid,
+                        action: TaskAction.RenameTask,
+                        NewName: editNameInput,
+                      };
 
-                        setTasks((prevTasks) =>
-                          prevTasks.map((t) => {
-                            if (t.uuid === selectedTask.uuid) {
-                              return {
-                                ...t,
-                                name: editNameInput,
-                              };
-                            } else {
-                              return t;
-                            }
-                          })
+                      updateTask(taskUpdateDesc).catch((err: Error) => {
+                        console.log(err);
+                        // open error modal
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing"
                         );
+                        onOpen();
+                      });
 
-                        updateTask(taskUpdateDesc).catch((err: Error) => {
-                          console.log(err);
-                          // open error modal
-                          setErrorMessage(
-                            err.message + "Try refreshing." ||
-                              "Something went wrong. Try refreshing"
-                          );
-                          onOpen();
-                        });
-
-                        setSubmittedEdit(true);
-                        setSaveChanges(false);
-                        setIsOpenTaskModal(false);
-                      } else if (editDescription) {
-                        setEditDescription(false);
-                        const taskUpdateName: TaskUpdateInput = {
-                          task_uuid: selectedTask.uuid,
-                          action: TaskAction.ChangeDesc,
-                          NewDesc: editDescriptionInput,
-                        };
-
-                        setTasks((prevTasks) =>
-                          prevTasks.map((t) => {
-                            if (t.uuid === selectedTask.uuid) {
-                              return {
-                                ...t,
-                                description: editDescriptionInput,
-                              };
-                            } else {
-                              return t;
-                            }
-                          })
-                        );
-
-                        updateTask(taskUpdateName).catch((err: Error) => {
-                          console.log(err);
-                          // open error modal
-                          setErrorMessage(
-                            err.message + "Try refreshing." ||
-                              "Something went wrong. Try refreshing"
-                          );
-                          onOpen();
-                        });
-                        e.stopPropagation();
-
-                        setSubmittedEdit(true);
-                        setSaveChanges(false);
-                        setIsOpenTaskModal(false);
-                      } else if (editName) {
-                        // submit the edited name
-                        setEditName(false);
-                        const taskUpdateDesc: TaskUpdateInput = {
-                          task_uuid: selectedTask.uuid,
-                          action: TaskAction.RenameTask,
-                          NewName: editNameInput,
-                        };
-
-                        setTasks((prevTasks) =>
-                          prevTasks.map((t) => {
-                            if (t.uuid === selectedTask.uuid) {
-                              return {
-                                ...t,
-                                name: editNameInput,
-                              };
-                            } else {
-                              return t;
-                            }
-                          })
-                        );
-
-                        updateTask(taskUpdateDesc).catch((err: Error) => {
-                          console.log(err);
-                          // open error modal
-                          setErrorMessage(
-                            err.message + "Try refreshing." ||
-                              "Something went wrong. Try refreshing"
-                          );
-                          onOpen();
-                        });
-                      }
-                      setSubmittedEdit(true);
+                      setSubmittedEdit(null);
                       setSaveChanges(false);
                       setIsOpenTaskModal(false);
                     }}
@@ -840,9 +937,100 @@ export default function Todo() {
               w="full"
               p={0}
             >
-              <Button ref={saveChangesRef}>Save</Button>
-              <Button>Discard</Button>
+              Looks like you have unsaved changes.
             </AlertDialogHeader>
+            <AlertDialogBody color={`${fg}_h`} w="full">
+              <HStack>
+                <Button
+                  ref={saveChangesRef}
+                  onClick={() => {
+                    console.log(selectedTask);
+                    if (selectedTask) {
+                      // submit the edited description
+                      setEditDescription(false);
+                      const taskUpdateName: TaskUpdateInput = {
+                        task_uuid: selectedTask.uuid,
+                        action: TaskAction.ChangeDesc,
+                        NewDesc: editDescriptionInput,
+                      };
+
+                      setTasks((prevTasks) =>
+                        prevTasks.map((t) => {
+                          if (t.uuid === selectedTask.uuid) {
+                            return {
+                              ...t,
+                              name: editNameInput,
+                              description: editDescriptionInput,
+                            };
+                          } else {
+                            return t;
+                          }
+                        })
+                      );
+
+                      updateTask(taskUpdateName).catch((err: Error) => {
+                        console.log(err);
+                        // open error modal
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing"
+                        );
+                        onOpen();
+                      });
+
+                      // submit the edited name
+                      setEditName(false);
+
+                      const taskUpdateDesc: TaskUpdateInput = {
+                        task_uuid: selectedTask.uuid,
+                        action: TaskAction.RenameTask,
+                        NewName: editNameInput,
+                      };
+
+                      updateTask(taskUpdateDesc).catch((err: Error) => {
+                        console.log(err);
+                        // open error modal
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing"
+                        );
+                        onOpen();
+                      });
+
+                      setSubmittedEdit(null);
+                      setSaveChanges(false);
+                      setIsOpenTaskModal(false);
+                    }
+                  }}
+                  bg={`${bg}2`}
+                  color={`${fg}`}
+                  _hover={{ bg: `${bg}3` }}
+                  _active={{ bg: `${bg}1` }}
+                  w="full"
+                >
+                  Save
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSaveChanges(false);
+                    setSubmittedEdit(null);
+                  }}
+                  bg="brand.dark.red"
+                  color={`${fg}`}
+                  _hover={{ bg: "brand.light.red_dim" }}
+                  _active={{ bg: "brand.light.red" }}
+                  _dark={{
+                    bg: "brand.dark.red",
+                    _hover: { bg: "brand.dark.red_dim" },
+                    _active: { bg: "brand.light.red" },
+                  }}
+                  w="full"
+                  mr={submittedEdit !== null ? "10px" : "0px"}
+                >
+                  Discard
+                </Button>
+              </HStack>
+            </AlertDialogBody>
           </AlertDialogContent>
         </AlertDialog>
         <AlertDialog

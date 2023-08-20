@@ -24,6 +24,21 @@ const Button = defineStyleConfig({
   },
 });
 
+const Tooltip = defineStyleConfig({
+  variants: {
+    styled: {
+      placement: "top",
+      color: `brand.light.fg`,
+      bg: `brand.light.bg1`,
+      _dark: {
+        color: `brand.dark.fg`,
+        bg: `brand.dark.bg1`,
+      },
+    },
+  },
+});
+
 export const components = {
   Button,
+  Tooltip,
 };
