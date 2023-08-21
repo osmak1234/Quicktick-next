@@ -69,12 +69,12 @@ const SignUpPage = () => {
     } else if (name.length < 5) {
       setNameError(false);
       setStopSubmit(false);
-      throw new Error("Name must contain least 5 characters long");
+      throw new Error("Name must contain at least 5 characters.");
     } else if (password.length < 6) {
       setStopSubmit(false);
       setEmailError(false);
       setPasswordError(true);
-      throw new Error("Password must be at least 6 characters long");
+      throw new Error("Password must be at least 6 characters long.");
     } else {
       const user: User = {
         name,

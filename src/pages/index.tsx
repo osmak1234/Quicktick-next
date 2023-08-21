@@ -16,6 +16,10 @@ import Layout from "~/components/layout";
 export default function Home() {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
   const fg = useColorModeValue("brand.light.fg", "brand.dark.fg");
+  const image = useColorModeValue(
+    "/quicktick-pc-2.avif",
+    "/quicktick-pc-1.avif"
+  );
   return (
     <Layout>
       <>
@@ -27,7 +31,7 @@ export default function Home() {
           display="flex"
           alignItems="center"
           justifyContent="center"
-          h="100vh"
+          minH="100vh"
         >
           <Box px={8} py={24} mx="auto">
             <Box
@@ -151,12 +155,7 @@ export default function Home() {
               mt={20}
               textAlign="center"
             >
-              <ChakraImage
-                w="full"
-                rounded="lg"
-                shadow="2xl"
-                alt="Quicktick todo page Image"
-              />
+              <ChakraImage w="full" rounded="lg" shadow="2xl" src={image} />
             </Box>
           </Box>
           ;
