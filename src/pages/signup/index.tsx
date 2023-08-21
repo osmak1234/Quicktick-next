@@ -186,7 +186,7 @@ const SignUpPage = () => {
                   Name
                 </FormLabel>
                 <Input
-                  isInvalid={emailError}
+                  isInvalid={nameError}
                   maxW={500}
                   w="full"
                   m="auto"

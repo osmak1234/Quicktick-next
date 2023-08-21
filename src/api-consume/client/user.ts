@@ -1,4 +1,3 @@
-import { string } from "zod";
 import { handle_error } from "../helper";
 
 export interface User {

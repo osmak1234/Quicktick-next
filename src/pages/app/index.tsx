@@ -98,7 +98,6 @@ export default function Todo() {
   const [initialLoad, setInitialLoad] = useState(true);
 
   // error modal
-  const [isOpenErrorModal, setIsOpenErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const cancelRef = useRef<HTMLButtonElement | null>(null);
 
@@ -212,7 +211,7 @@ export default function Todo() {
         );
         onOpen();
       });
-  }, []);
+  }, [onOpen]);
 
   useEffect(() => {
     getUserData();

@@ -6,12 +6,13 @@ import {
   Text,
   chakra,
   Button,
+  useMediaQuery,
   Stack,
   Image as ChakraImage,
   Icon,
 } from "@chakra-ui/react";
 
-import Image from "next/image";
+import { useRouter } from "next/router";
 import Layout from "~/components/layout";
 export default function Home() {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
@@ -20,6 +21,10 @@ export default function Home() {
     "/quicktick-pc-2.avif",
     "/quicktick-pc-1.avif"
   );
+
+  const router = useRouter();
+
+  const [isMobile] = useMediaQuery("(max-width: 668px)");
   return (
     <Layout>
       <>
@@ -129,6 +134,9 @@ export default function Home() {
                   }}
                   size="lg"
                   cursor="pointer"
+                  onClick={() => {
+                    router.push("/login").catch((err) => console.log(err));
+                  }}
                 >
                   Get Started
                   <Icon
@@ -147,15 +155,23 @@ export default function Home() {
               </Stack>
             </Box>
             <Box
-              w={{
-                base: "full",
-                md: 10 / 12,
-              }}
+              w="fit-content" // Set width to 100% to span the entire container
               mx="auto"
-              mt={20}
-              textAlign="center"
+              bg={bg}
+              shadow="lg"
+              rounded="lg"
+              overflow="hidden"
             >
-              <ChakraImage w="full" rounded="lg" shadow="2xl" src={image} />
+              <ChakraImage
+                w="100%" // Adjust the width to span the full container
+                h={isMobile ? "300px" : "600px"} // Adjust the height for mobile and larger screens
+                objectFit={isMobile ? "cover" : "contain"} // Change objectFit based on screen size
+                objectPosition="center" // Adjust the cropping position
+                rounded="lg"
+                shadow="2xl"
+                src={image}
+                alt="Your Image"
+              />
             </Box>
           </Box>
           ;

@@ -41,7 +41,6 @@ export default function Profile() {
   const [changeName, setChangeName] = useState(false);
   const [newName, setNewName] = useState("");
 
-  const [success, setSuccess] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const cancelRef = useRef<HTMLButtonElement | null>(null);

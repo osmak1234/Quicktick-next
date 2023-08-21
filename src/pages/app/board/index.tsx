@@ -67,7 +67,7 @@ export default function Board() {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     getUserData();
@@ -82,7 +82,7 @@ export default function Board() {
         );
         onOpen();
       });
-  }, [getUserData]);
+  }, [getUserData, onOpen]);
 
   const parent = useRef(null);
 
@@ -169,9 +169,7 @@ export default function Board() {
                         _hover={{
                           borderColor: "gray.400",
                         }}
-                        // TODO: after clicking select board on app page, go to that board
                         onClick={() => {
-                          // add query params with board uuid
                           router
                             .push({
                               pathname: "/app",

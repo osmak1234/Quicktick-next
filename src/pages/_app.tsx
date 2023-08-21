@@ -4,7 +4,6 @@ import { components } from "../styles/chakra-ui";
 import { lightColors, darkColors } from "../styles/color";
 import Navbar from "../components/navbar";
 import {
-  Box,
   ChakraProvider,
   ColorModeScript,
   extendTheme,
