@@ -169,8 +169,15 @@ export default function Board() {
                         _hover={{
                           borderColor: "gray.400",
                         }}
+                        // TODO: after clicking select board on app page, go to that board
                         onClick={() => {
-                          router.push(`/app/`).catch((err) => console.log(err));
+                          // add query params with board uuid
+                          router
+                            .push({
+                              pathname: "/app",
+                              query: { boardUUID: board.uuid },
+                            })
+                            .catch((err) => console.log(err));
                         }}
                       >
                         <Image

@@ -160,7 +160,7 @@ export default function Navbar() {
             </Box>
             <chakra.a
               href="/"
-              title="Choc Home Page"
+              title="Quicktick"
               display="flex"
               alignItems="center"
             >
@@ -174,6 +174,13 @@ export default function Navbar() {
               <VisuallyHidden>Quicktick Logo</VisuallyHidden>
             </chakra.a>
 
+            <Link
+              href="/"
+              style={{
+                //hide this to the user
+                display: "none",
+              }}
+            ></Link>
             <HStack spacing={3} display={{ base: "none", md: "inline-flex" }}>
               <Button
                 variant="solid"

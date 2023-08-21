@@ -67,7 +67,13 @@ enum SortBy {
   CompletedDescending,
 }
 
+// check query params for board boardUUID
+
+import { useRouter } from "next/router";
+
 export default function Todo() {
+  const router = useRouter();
+
   // Task inspect/edit modal
   const [isOpenTaskModal, setIsOpenTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -217,7 +223,14 @@ export default function Todo() {
   function fetch_initial_data() {
     // Get all all tasksA
     getAllUserTasks()
-      .then((tasks) => setTasks(tasks))
+      .then((tasks) => {
+        const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
+        const to_set_tasks = tasks.filter(
+          (task) => task.board_uuid != archive_uuid
+        );
+
+        setTasks(to_set_tasks);
+      })
       .catch((err: Error) => {
         console.log(err);
         // open error modal
@@ -251,6 +264,21 @@ export default function Todo() {
     fetch_initial_data();
   }, []);
 
+  useEffect(() => {
+    // Access the query parameters from the router object
+    const { query } = router;
+
+    // Check if there is a "boardUUID" query parameter
+    const boardUUID = query.boardUUID;
+
+    if (boardUUID) {
+      // If there is a boardUUID, set the selected board to the boardUUID in the query params
+      const foundBoard = boards.find((board) => board.uuid === boardUUID);
+      if (foundBoard) {
+        setSelectedBoard(foundBoard);
+      }
+    }
+  }, [router.query, router, boards]);
   const toggleTask = async (taskUUID: string) => {
     const taskToUpdate = tasks.find((task) => task.uuid === taskUUID);
     if (taskToUpdate) {

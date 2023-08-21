@@ -77,7 +77,7 @@ const LoginPage = () => {
           display="flex"
           alignItems="center"
           justifyContent="center"
-          height="100vh"
+          minH="100vh"
           flexDirection="column"
           p={4}
         >

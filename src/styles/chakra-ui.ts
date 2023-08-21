@@ -4,6 +4,7 @@ const Button = defineStyleConfig({
   variants: {
     mobile_add_button: {
       color: "brand.light.fg",
+      zIndex: 100,
       position: "fixed",
       bottom: 4,
       right: 4,

@@ -1,3 +1,4 @@
+import { string } from "zod";
 import { handle_error } from "../helper";
 
 export interface User {
@@ -64,5 +65,23 @@ export async function authenticateUser(
     const user: User = (await response.json()) as User;
     return user;
   }
+  return;
+}
+
+export async function changeUserName(newName: string) {
+  const response = await fetch(`https://quicktick-api.fly.dev/patch/user`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      action: "NewName",
+      new_name: newName,
+    }),
+    credentials: "include",
+  });
+
+  await handle_error(response);
+
   return;
 }
