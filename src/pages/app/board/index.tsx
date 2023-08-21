@@ -333,6 +333,7 @@ export default function Board() {
         </AlertDialog>
         <Button
           hidden={isLargerThan768}
+          zIndex={100}
           variant={"mobile_add_button"}
           onClick={() => {
             setNewBoardModal(newBoardModal + 1);
