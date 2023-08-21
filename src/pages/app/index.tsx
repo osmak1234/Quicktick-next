@@ -134,7 +134,16 @@ export default function Todo() {
     if (selectedBoard) {
       if (selectedBoard.special == 1) {
         getAllUserTasks()
-          .then((tasks) => setTasks(tasks))
+          .then((tasks) => {
+            const archive_uuid = boards.find(
+              (board) => board.special == 2
+            )?.uuid;
+            const to_set_tasks = tasks.filter(
+              (task) => task.board_uuid != archive_uuid
+            );
+
+            setTasks(to_set_tasks);
+          })
           .catch((err: Error) => {
             console.log(err);
             // open error modal
@@ -1252,6 +1261,7 @@ export default function Todo() {
           </AlertDialogOverlay>
         </AlertDialog>
         <Button
+          zIndex={100}
           hidden={isLargerThan768}
           variant={"mobile_add_button"}
           onClick={() => {
