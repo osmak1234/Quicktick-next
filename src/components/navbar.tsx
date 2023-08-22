@@ -74,6 +74,7 @@ export default function Navbar() {
         zIndex: 1000,
       }}
       ref={parent}
+      pb={0}
     >
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
@@ -81,8 +82,8 @@ export default function Navbar() {
         bg={bg}
         w="full"
         px={{ base: 2, sm: 4 }}
-        py={4}
-        shadow="md"
+        pt={4}
+        shadow="2xl"
       >
         <Flex alignItems="center" justifyContent="space-between" mx="auto">
           <HStack display="flex" spacing={3} alignItems="center">
