@@ -245,7 +245,6 @@ export default function Navbar() {
                     variant="link"
                     size="sm"
                     color={`${fg}`}
-                    bg={`${bg}1`}
                     onClick={() => {
                       router.push("/login").catch((err) => console.log(err));
                     }}
