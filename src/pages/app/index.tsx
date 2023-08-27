@@ -229,25 +229,6 @@ export default function Todo() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   function fetch_initial_data() {
-    // Get all all tasksA
-    getAllUserTasks()
-      .then((tasks) => {
-        const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
-        const to_set_tasks = tasks.filter(
-          (task) => task.board_uuid != archive_uuid
-        );
-
-        setTasks(to_set_tasks);
-      })
-      .catch((err: Error) => {
-        console.log(err);
-        // open error modal
-        setErrorMessage(
-          err.message + "Try refreshing." ||
-            "Something went wrong. Try refreshing"
-        );
-        onOpen();
-      });
     getAllUserBoards()
       .then((fetchedBoards) => {
         if (initialLoad) {
@@ -267,10 +248,36 @@ export default function Todo() {
         onOpen();
       });
     console.log("fetched initial data");
+
+    // Get all all tasks
+    getAllUserTasks()
+      .then((tasks) => {
+        const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
+        const to_set_tasks = tasks.filter(
+          (task) => task.board_uuid != archive_uuid
+        );
+
+        setTasks(to_set_tasks);
+      })
+      .catch((err: Error) => {
+        console.log(err);
+        // open error modal
+        setErrorMessage(
+          err.message + "Try refreshing." ||
+            "Something went wrong. Try refreshing"
+        );
+        onOpen();
+      });
   }
   useEffect(() => {
     fetch_initial_data();
   }, []);
+  useEffect(() => {
+    setTasks((tasks) => {
+      const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
+      return tasks.filter((task) => task.board_uuid != archive_uuid);
+    });
+  }, [boards]);
 
   useEffect(() => {
     // Access the query parameters from the router object

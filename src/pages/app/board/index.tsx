@@ -43,6 +43,7 @@ export default function Board() {
   const cancelRef = useRef(null);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [noBoards, setNoBoards] = useState<boolean>(false);
 
   // fetch the user name
   const [user, setUser] = useState<User | null>(null);
@@ -72,7 +73,12 @@ export default function Board() {
   useEffect(() => {
     getUserData();
     getAllUserBoards()
-      .then((boards) => setBoards(boards))
+      .then((boards) => {
+        setBoards(boards);
+        if (boards.length === 0) {
+          setNoBoards(true);
+        }
+      })
       .catch((err: Error) => {
         console.log(err);
         // open error modal
@@ -140,118 +146,113 @@ export default function Board() {
             overflowX="scroll"
             p={4}
           >
-            {!user ? (
-              <Heading as="h2" size="xl" color={fg}>
-                Logging in...
-              </Heading>
-            ) : (
-              <>
-                {boards.length === 0 ? (
-                  <Heading as="h2" size="xl" color={fg}>
-                    You have no boards
-                  </Heading>
-                ) : (
-                  <SimpleGrid
-                    columns={{ base: 1, sm: 2, md: 3, lg: 3 }}
-                    spacing={{ base: 6, sm: 8, md: 8 }}
-                    overflowX={"scroll"}
-                  >
-                    {boards.map((board) => (
-                      <Box
-                        key={board.uuid}
-                        bg={`${bg}_h`}
-                        shadow="lg"
-                        rounded="lg"
-                        borderWidth="1px"
-                        borderColor={`${bg}_darker`}
-                        textAlign="center"
-                        pb={4}
-                        _hover={{
-                          borderColor: "gray.400",
+            <>
+              {noBoards === true ? (
+                <Heading as="h2" size="xl" color={fg}>
+                  You have no boards
+                </Heading>
+              ) : (
+                <SimpleGrid
+                  columns={{ base: 1, sm: 2, md: 3, lg: 3 }}
+                  spacing={{ base: 6, sm: 8, md: 8 }}
+                  overflowX={"scroll"}
+                >
+                  {boards.map((board) => (
+                    <Box
+                      key={board.uuid}
+                      bg={`${bg}_h`}
+                      shadow="lg"
+                      rounded="lg"
+                      borderWidth="1px"
+                      borderColor={`${bg}2`}
+                      textAlign="center"
+                      pb={4}
+                      _hover={{
+                        borderColor: "brand.light.fg3",
+                      }}
+                      _dark={{
+                        _hover: {
+                          borderColor: "brand.dark.fg3",
+                        },
+                      }}
+                      onClick={() => {
+                        router
+                          .push({
+                            pathname: "/app",
+                            query: { boardUUID: board.uuid },
+                          })
+                          .catch((err) => console.log(err));
+                      }}
+                    >
+                      <Image
+                        src="/gruvbox_todo_board.jpg"
+                        alt={board.name}
+                        width="100%"
+                        height="140px"
+                        objectFit="cover"
+                        style={{
+                          borderRadius: "5%",
                         }}
-                        onClick={() => {
-                          router
-                            .push({
-                              pathname: "/app",
-                              query: { boardUUID: board.uuid },
-                            })
-                            .catch((err) => console.log(err));
-                        }}
+                      />
+                      <Heading as="h2" size="md" color={fg} mt={2}>
+                        {board.name}
+                      </Heading>
+
+                      <Tooltip
+                        label="Delete board"
+                        aria-label="Delete board"
+                        openDelay={1000}
+                        variant="styled"
                       >
-                        <Image
-                          src="/gruvbox_todo_board.jpg"
-                          alt={board.name}
-                          width="100%"
-                          height="140px"
-                          objectFit="cover"
-                          style={{
-                            borderRadius: "5%",
+                        <Button
+                          zIndex={0}
+                          aria-label="delete board"
+                          variant="ghost"
+                          colorScheme="red"
+                          size="sm"
+                          alignSelf="center"
+                          padding={0}
+                          color="brand.light.red"
+                          _dark={{ color: "brand.dark.red" }}
+                          _hover={{
+                            border: "1px",
+                            borderStyle: "solid",
+                            borderColor: "red.500",
                           }}
-                        />
-                        <Heading as="h2" size="md" color={fg} mt={2}>
-                          {board.name}
-                        </Heading>
+                          onClick={() => {
+                            if (board.special == 1 || board.special == 2) {
+                              setErrorMessage("You cannot delete this board.");
+                              onOpen();
+                              return;
+                            } else {
+                              deleteBoard(board.uuid)
+                                .then(() => {
+                                  setBoards(
+                                    boards.filter((b) => b.uuid !== board.uuid)
+                                  );
+                                })
+                                .catch((err: Error) => {
+                                  console.log(err);
+                                  // open error NewBoardModal
+                                  setErrorMessage(
+                                    err.message + "Try refreshing." ||
+                                      "Something went wrong. Try refreshing"
+                                  );
+                                  onOpen();
+                                });
 
-                        <Tooltip
-                          label="Delete board"
-                          aria-label="Delete board"
-                          openDelay={1000}
-                          variant="styled"
+                              console.log("delete board");
+                            }
+                          }}
                         >
-                          <Button
-                            zIndex={0}
-                            aria-label="delete board"
-                            variant="ghost"
-                            colorScheme="red"
-                            size="sm"
-                            alignSelf="center"
-                            padding={0}
-                            color="brand.light.red"
-                            _dark={{ color: "brand.dark.red" }}
-                            _hover={{
-                              border: "1px",
-                              borderStyle: "solid",
-                              borderColor: "red.500",
-                            }}
-                            onClick={() => {
-                              if (board.special == 1 || board.special == 2) {
-                                setErrorMessage(
-                                  "You cannot delete this board."
-                                );
-                                onOpen();
-                                return;
-                              } else {
-                                deleteBoard(board.uuid)
-                                  .then(() => {
-                                    setBoards(
-                                      boards.filter(
-                                        (b) => b.uuid !== board.uuid
-                                      )
-                                    );
-                                  })
-                                  .catch((err: Error) => {
-                                    console.log(err);
-                                    // open error NewBoardModal
-                                    setErrorMessage(
-                                      err.message + "Try refreshing." ||
-                                        "Something went wrong. Try refreshing"
-                                    );
-                                    onOpen();
-                                  });
-
-                                console.log("delete board");
-                              }
-                            }}
-                          >
-                            <BsX size={"30px"} />
-                          </Button>
-                        </Tooltip>
-                      </Box>
-                    ))}
-                  </SimpleGrid>
-                )}
-              </>
-            )}
+                          <BsX size={"30px"} />
+                        </Button>
+                      </Tooltip>
+                    </Box>
+                  ))}
+                </SimpleGrid>
+              )}
+            </>
           </Box>
         </Box>
         <AlertDialog
