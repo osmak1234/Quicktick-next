@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-base-to-string */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   AlertDialog,
@@ -33,6 +38,8 @@ import Layout from "~/components/layout";
 import NewBoardModal from "~/components/new_board_modal";
 
 import autoAnimate from "@formkit/auto-animate";
+
+import WebSocket from "ws"; // Import the WebSocket module
 
 export default function Board() {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
@@ -95,6 +102,42 @@ export default function Board() {
   useEffect(() => {
     parent.current && autoAnimate(parent.current);
   }, [parent]);
+
+  useEffect(() => {
+    const ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
+
+    ws.on("error", console.error);
+
+    ws.on("message", (data) => {
+      if (data.toString() === "update") {
+        handleUpdate(); // Call your update function here
+      }
+      console.log("received: %s", data);
+    });
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  const handleUpdate = () => {
+    getAllUserBoards()
+      .then((boards) => {
+        setBoards(boards);
+        if (boards.length === 0) {
+          setNoBoards(true);
+        }
+      })
+      .catch((err: Error) => {
+        console.log(err);
+        // open error newBoardModal
+        setErrorMessage(
+          err.message + "Try refreshing." ||
+            "Something went wrong. Try refreshing"
+        );
+        onOpen();
+      });
+  };
 
   return (
     <Layout>

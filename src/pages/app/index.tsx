@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-base-to-string */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { theme } from "../_app";
 import { NewTaskModal } from "../../components/create_new_task_modal";
 import {
@@ -67,11 +71,67 @@ enum SortBy {
   CompletedDescending,
 }
 
-// check query params for board boardUUID
-
 import { useRouter } from "next/router";
 
+import WebSocket from "ws"; // Import the WebSocket module
+
 export default function Todo() {
+  useEffect(() => {
+    const ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
+
+    ws.on("error", console.error);
+
+    ws.on("message", (data) => {
+      if (data.toString() === "update") {
+        handleUpdate(); // Call your update function here
+      }
+      console.log("received: %s", data);
+    });
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  const handleUpdate = () => {
+    if (selectedBoard) {
+      if (selectedBoard.special == 1) {
+        getAllUserTasks()
+          .then((tasks) => {
+            const archive_uuid = boards.find(
+              (board) => board.special == 2
+            )?.uuid;
+            const to_set_tasks = tasks.filter(
+              (task) => task.board_uuid != archive_uuid
+            );
+
+            setTasks(to_set_tasks);
+          })
+          .catch((err: Error) => {
+            console.log(err);
+            // open error modal
+            setErrorMessage(
+              err.message + "Try refreshing." ||
+                "Something went wrong. Try refreshing"
+            );
+            onOpen();
+          });
+      } else {
+        getBoardTasks(selectedBoard.uuid)
+          .then((tasks) => setTasks(tasks))
+          .catch((err: Error) => {
+            console.log(err);
+            // open error modal
+            setErrorMessage(
+              err.message + "Try refreshing." ||
+                "Something went wrong. Try refreshing"
+            );
+            onOpen();
+          });
+      }
+    }
+  };
+
   const router = useRouter();
 
   // Task inspect/edit modal
