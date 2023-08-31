@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-base-to-string */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { theme } from "../_app";
 import { NewTaskModal } from "../../components/create_new_task_modal";
 import {
@@ -73,20 +69,18 @@ enum SortBy {
 
 import { useRouter } from "next/router";
 
-import WebSocket from "ws"; // Import the WebSocket module
-
 export default function Todo() {
   useEffect(() => {
     const ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
 
-    ws.on("error", console.error);
+    ws.onopen = () => {
+      console.log("connected");
+    };
 
-    ws.on("message", (data) => {
-      if (data.toString() === "update") {
-        handleUpdate(); // Call your update function here
-      }
-      console.log("received: %s", data);
-    });
+    ws.onmessage = (e) => {
+      console.log(e.data);
+      handleUpdate();
+    };
 
     return () => {
       ws.close();
