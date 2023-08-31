@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -20,7 +20,6 @@ import {
 import { theme } from "~/pages/_app";
 import { useColorModeValue, ColorModeScript } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { type User, authenticateUser } from "~/api-consume/client/user";
 import {
   getAllUserBoards,
   type Board,
@@ -46,7 +45,6 @@ export default function Board() {
   const [noBoards, setNoBoards] = useState<boolean>(false);
 
   // fetch the user name
-  const [user, setUser] = useState<User | null>(null);
   const [boards, setBoards] = useState<Board[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -54,24 +52,7 @@ export default function Board() {
 
   const [newBoardModal, setNewBoardModal] = useState<number>(0);
 
-  const getUserData = useCallback(() => {
-    console.log("getting user data");
-    console.log(document.cookie);
-    authenticateUser("cookie", "cookie")
-      .then((userData) => {
-        if (!userData) {
-          router.push("/login").catch((err) => console.log(err));
-        } else {
-          setUser(userData);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [router]);
-
   useEffect(() => {
-    getUserData();
     getAllUserBoards()
       .then((boards) => {
         setBoards(boards);
@@ -88,7 +69,7 @@ export default function Board() {
         );
         onOpen();
       });
-  }, [getUserData, onOpen]);
+  }, [, onOpen]);
 
   const parent = useRef(null);
 
@@ -97,7 +78,7 @@ export default function Board() {
   }, [parent]);
 
   useEffect(() => {
-    const ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
+    let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
 
     ws.onopen = () => {
       console.log("connected");
@@ -106,6 +87,14 @@ export default function Board() {
     ws.onmessage = (e) => {
       console.log(e.data);
       handleUpdate();
+    };
+
+    ws.onclose = () => {
+      console.log("disconnected");
+      setTimeout(() => {
+        console.log("reconnecting");
+        ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
+      }, 5000);
     };
 
     return () => {

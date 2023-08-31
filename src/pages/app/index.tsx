@@ -70,26 +70,9 @@ enum SortBy {
 import { useRouter } from "next/router";
 
 export default function Todo() {
-  useEffect(() => {
-    const ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-
-    ws.onopen = () => {
-      console.log("connected");
-    };
-
-    ws.onmessage = (e) => {
-      console.log(e.data);
-      handleUpdate();
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, []);
-
-  const handleUpdate = () => {
+  function handle_update() {
     if (selectedBoard) {
-      if (selectedBoard.special == 1) {
+      if (selectedBoard?.special == 1) {
         getAllUserTasks()
           .then((tasks) => {
             const archive_uuid = boards.find(
@@ -124,7 +107,7 @@ export default function Todo() {
           });
       }
     }
-  };
+  }
 
   const router = useRouter();
 
@@ -374,7 +357,32 @@ export default function Todo() {
 
   const [newTaskModal, setNewTaskModal] = useState(0);
 
-  // onOpen for NewTaskModal
+  //websockets
+  useEffect(() => {
+    let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
+    ws.onopen = () => {
+      console.log("connected");
+    };
+    ws.onmessage = (e) => {
+      console.log(e.data);
+      if (e.data == "update") {
+        console.log("updating");
+        handle_update();
+      }
+    };
+    // on close try to reconnect
+    ws.onclose = () => {
+      console.log("disconnected");
+      setTimeout(() => {
+        console.log("reconnecting");
+        ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
+      }, 5000);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   return (
     <>
