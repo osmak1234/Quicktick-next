@@ -70,45 +70,6 @@ enum SortBy {
 import { useRouter } from "next/router";
 
 export default function Todo() {
-  function handle_update() {
-    if (selectedBoard) {
-      if (selectedBoard?.special == 1) {
-        getAllUserTasks()
-          .then((tasks) => {
-            const archive_uuid = boards.find(
-              (board) => board.special == 2
-            )?.uuid;
-            const to_set_tasks = tasks.filter(
-              (task) => task.board_uuid != archive_uuid
-            );
-
-            setTasks(to_set_tasks);
-          })
-          .catch((err: Error) => {
-            console.log(err);
-            // open error modal
-            setErrorMessage(
-              err.message + "Try refreshing." ||
-                "Something went wrong. Try refreshing"
-            );
-            onOpen();
-          });
-      } else {
-        getBoardTasks(selectedBoard.uuid)
-          .then((tasks) => setTasks(tasks))
-          .catch((err: Error) => {
-            console.log(err);
-            // open error modal
-            setErrorMessage(
-              err.message + "Try refreshing." ||
-                "Something went wrong. Try refreshing"
-            );
-            onOpen();
-          });
-      }
-    }
-  }
-
   const router = useRouter();
 
   // Task inspect/edit modal
@@ -137,6 +98,7 @@ export default function Todo() {
   // error modal
   const [errorMessage, setErrorMessage] = useState("");
   const cancelRef = useRef<HTMLButtonElement | null>(null);
+  const [refetch, setRefetch] = useState(0);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -204,7 +166,7 @@ export default function Todo() {
           });
       }
     }
-  }, [selectedBoard]);
+  }, [selectedBoard, refetch]);
 
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
   const fg = useColorModeValue("brand.light.fg", "brand.dark.fg");
@@ -309,6 +271,7 @@ export default function Todo() {
   useEffect(() => {
     fetch_initial_data();
   }, []);
+
   useEffect(() => {
     setTasks((tasks) => {
       const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
@@ -317,14 +280,11 @@ export default function Todo() {
   }, [boards]);
 
   useEffect(() => {
-    // Access the query parameters from the router object
     const { query } = router;
 
-    // Check if there is a "boardUUID" query parameter
     const boardUUID = query.boardUUID;
 
     if (boardUUID) {
-      // If there is a boardUUID, set the selected board to the boardUUID in the query params
       const foundBoard = boards.find((board) => board.uuid === boardUUID);
       if (foundBoard) {
         setSelectedBoard(foundBoard);
@@ -360,29 +320,33 @@ export default function Todo() {
   //websockets
   useEffect(() => {
     let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-    ws.onopen = () => {
-      console.log("connected");
-    };
-    ws.onmessage = (e) => {
-      console.log(e.data);
-      if (e.data == "update") {
+
+    const handleWebSocketMessage = (e: MessageEvent) => {
+      if (e.data === "update") {
         console.log("updating");
-        handle_update();
+        setRefetch((prev) => prev + 1);
       }
     };
-    // on close try to reconnect
-    ws.onclose = () => {
+
+    ws.addEventListener("open", () => {
+      console.log("connected");
+    });
+
+    ws.addEventListener("message", handleWebSocketMessage);
+
+    ws.addEventListener("close", () => {
       console.log("disconnected");
       setTimeout(() => {
         console.log("reconnecting");
         ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-      }, 5000);
-    };
+      }, 10);
+    });
 
     return () => {
+      ws.removeEventListener("message", handleWebSocketMessage);
       ws.close();
     };
-  }, []);
+  }, [selectedBoard]);
 
   return (
     <>
