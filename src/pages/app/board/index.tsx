@@ -244,7 +244,9 @@ export default function Board() {
                             borderStyle: "solid",
                             borderColor: "red.500",
                           }}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
+
                             if (board.special == 1 || board.special == 2) {
                               setErrorMessage("You cannot delete this board.");
                               onOpen();
