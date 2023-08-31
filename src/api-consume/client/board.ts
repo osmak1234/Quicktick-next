@@ -33,6 +33,7 @@ export async function createBoard(boardData: BoardToCreate): Promise<void> {
   const response = await fetch("https://quicktick-api.fly.dev/post/board", {
     method: "POST",
     headers: {
+      origin: "https://quicktick-next.vercel.app",
       "Content-Type": "application/json",
     },
     body: JSON.stringify(boardData),

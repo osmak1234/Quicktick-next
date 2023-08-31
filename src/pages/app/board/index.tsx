@@ -52,6 +52,8 @@ export default function Board() {
 
   const [newBoardModal, setNewBoardModal] = useState<number>(0);
 
+  const [refresh, setRefresh] = useState(0);
+
   useEffect(() => {
     getAllUserBoards()
       .then((boards) => {
@@ -69,7 +71,7 @@ export default function Board() {
         );
         onOpen();
       });
-  }, [, onOpen]);
+  }, [refresh, onOpen]);
 
   const parent = useRef(null);
 
@@ -80,46 +82,32 @@ export default function Board() {
   useEffect(() => {
     let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
 
-    ws.onopen = () => {
+    const handleWebSocketMessage = (e: MessageEvent) => {
+      if (e.data === "update") {
+        console.log("updating");
+        setRefresh(refresh + 1);
+      }
+    };
+
+    ws.addEventListener("open", () => {
       console.log("connected");
-    };
+    });
 
-    ws.onmessage = (e) => {
-      console.log(e.data);
-      handleUpdate();
-    };
+    ws.addEventListener("message", handleWebSocketMessage);
 
-    ws.onclose = () => {
+    ws.addEventListener("close", () => {
       console.log("disconnected");
       setTimeout(() => {
         console.log("reconnecting");
         ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-      }, 5000);
-    };
+      }, 10);
+    });
 
     return () => {
+      ws.removeEventListener("message", handleWebSocketMessage);
       ws.close();
     };
   }, []);
-
-  const handleUpdate = () => {
-    getAllUserBoards()
-      .then((boards) => {
-        setBoards(boards);
-        if (boards.length === 0) {
-          setNoBoards(true);
-        }
-      })
-      .catch((err: Error) => {
-        console.log(err);
-        // open error newBoardModal
-        setErrorMessage(
-          err.message + "Try refreshing." ||
-            "Something went wrong. Try refreshing"
-        );
-        onOpen();
-      });
-  };
 
   return (
     <Layout>
