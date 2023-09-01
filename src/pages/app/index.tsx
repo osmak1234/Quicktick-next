@@ -131,6 +131,7 @@ export default function Todo() {
 
   useEffect(() => {
     console.log("refetching \n > \n >");
+    console.log(selectedBoard);
     if (selectedBoard) {
       if (selectedBoard.special == 1) {
         getAllUserTasks()
@@ -166,6 +167,26 @@ export default function Todo() {
             onOpen();
           });
       }
+    } else {
+      getAllUserTasks()
+        .then((tasks) => {
+          const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
+          const to_set_tasks = tasks.filter(
+            (task) => task.board_uuid != archive_uuid
+          );
+
+          setTasks(to_set_tasks);
+        })
+        .catch((err: Error) => {
+          console.log(err);
+          // open error modal
+          setErrorMessage(
+            err.message + "Try refreshing." ||
+              "Something went wrong. Try refreshing"
+          );
+          onOpen();
+        });
+      setSelectedBoard(boards.find((board) => board.special == 1));
     }
   }, [selectedBoard, refetch]);
 
@@ -250,6 +271,7 @@ export default function Todo() {
       });
     console.log("fetched initial data");
 
+    setSelectedBoard(boards.find((board) => board.special == 1));
     // Get all all tasks
     getAllUserTasks()
       .then((tasks) => {
@@ -269,6 +291,8 @@ export default function Todo() {
         );
         onOpen();
       });
+
+    setSelectedBoard(boards.find((board) => board.special == 1));
   }
   useEffect(() => {
     fetch_initial_data();
@@ -322,41 +346,43 @@ export default function Todo() {
   //websockets
   useEffect(() => {
     let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-
-    const handleWebSocketMessage = (e: MessageEvent) => {
+    ws.addEventListener("open", () => {
+      console.log("connected");
+      ws.send("hello");
+    });
+    ws.addEventListener("message", (e) => {
+      console.log("recieved message");
+      console.log(e.data);
       if (e.data === "update") {
         console.log("updating");
         console.log(refetch);
         setRefetch((prev) => prev + 1);
         console.log(refetch);
       }
-    };
-
-    ws.addEventListener("open", () => {
-      console.log("connected");
     });
-
-    ws.addEventListener("message", handleWebSocketMessage);
 
     ws.addEventListener("close", () => {
       console.log("disconnected");
       setTimeout(() => {
-        console.log("reconnecting");
+        console.log(">trigered reconnect");
         ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
         ws.addEventListener("open", () => {
           console.log("connected");
+          ws.send("hello");
         });
-        ws.addEventListener("message", handleWebSocketMessage);
-        ws.addEventListener("close", () => {
-          console.log("disconnected");
+        ws.addEventListener("message", (e) => {
+          console.log("recieved message");
+          console.log(e.data);
+          if (e.data === "update") {
+            console.log("updating");
+            console.log(refetch);
+            setRefetch((prev) => prev + 1);
+            console.log(refetch);
+          }
         });
-      }, 3000);
+      }, 5000);
     });
-    return () => {
-      ws.removeEventListener("message", handleWebSocketMessage);
-      ws.close();
-    };
-  }, [selectedBoard]);
+  }, []);
 
   return (
     <>
