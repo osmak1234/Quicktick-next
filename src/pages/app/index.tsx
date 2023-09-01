@@ -323,7 +323,7 @@ export default function Todo() {
   useEffect(() => {
     let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
 
-    const handleWebSocketMessage = (e) => {
+    const handleWebSocketMessage = (e: MessageEvent) => {
       if (e.data === "update") {
         console.log("updating");
         console.log(refetch);
@@ -332,34 +332,32 @@ export default function Todo() {
       }
     };
 
-    const handleWebSocketOpen = () => {
+    ws.addEventListener("open", () => {
       console.log("connected");
-    };
+    });
 
-    const handleWebSocketClose = () => {
+    ws.addEventListener("message", handleWebSocketMessage);
+
+    ws.addEventListener("close", () => {
       console.log("disconnected");
       setTimeout(() => {
         console.log("reconnecting");
         ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-        // Re-add event listeners after reconnecting.
-        ws.addEventListener("open", handleWebSocketOpen);
+        ws.addEventListener("open", () => {
+          console.log("connected");
+        });
         ws.addEventListener("message", handleWebSocketMessage);
-        ws.addEventListener("close", handleWebSocketClose);
+        ws.addEventListener("close", () => {
+          console.log("disconnected");
+        });
       }, 3000);
-    };
-
-    ws.addEventListener("open", handleWebSocketOpen);
-    ws.addEventListener("message", handleWebSocketMessage);
-    ws.addEventListener("close", handleWebSocketClose);
-
-    // Clean up when the component unmounts.
+    });
     return () => {
-      ws.close();
-      ws.removeEventListener("open", handleWebSocketOpen);
       ws.removeEventListener("message", handleWebSocketMessage);
-      ws.removeEventListener("close", handleWebSocketClose);
+      ws.close();
     };
   }, [selectedBoard]);
+
   return (
     <>
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
