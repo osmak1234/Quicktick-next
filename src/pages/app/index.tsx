@@ -130,6 +130,7 @@ export default function Todo() {
   }, [isOpenTaskModal, submittedEdit]);
 
   useEffect(() => {
+    console.log("refetching \n > \n >");
     if (selectedBoard) {
       if (selectedBoard.special == 1) {
         getAllUserTasks()
@@ -324,7 +325,9 @@ export default function Todo() {
     const handleWebSocketMessage = (e: MessageEvent) => {
       if (e.data === "update") {
         console.log("updating");
+        console.log(refetch);
         setRefetch((prev) => prev + 1);
+        console.log(refetch);
       }
     };
 
