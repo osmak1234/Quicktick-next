@@ -49,6 +49,9 @@ export async function deleteBoard(BoardId: string): Promise<void> {
   const response = await fetch(
     `https://quicktick-api.fly.dev/delete/board/${BoardId}`,
     {
+      headers: {
+        origin: "https://quicktick-next.vercel.app",
+      },
       method: "DELETE",
       credentials: "include",
     }

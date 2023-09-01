@@ -339,13 +339,8 @@ export default function Todo() {
       setTimeout(() => {
         console.log("reconnecting");
         ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-      }, 10);
+      }, 3000);
     });
-
-    return () => {
-      ws.removeEventListener("message", handleWebSocketMessage);
-      ws.close();
-    };
   }, [selectedBoard]);
 
   return (
