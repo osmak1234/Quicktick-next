@@ -233,6 +233,7 @@ export default function Todo() {
       .then((fetchedBoards) => {
         if (initialLoad) {
           setBoards((prevBoards) => [...prevBoards, ...fetchedBoards]);
+          setSelectedBoard(boards.find((board) => board.special == 1));
           setInitialLoad(false);
         } else {
           setBoards(fetchedBoards);
