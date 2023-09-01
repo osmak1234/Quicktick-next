@@ -323,7 +323,7 @@ export default function Todo() {
   useEffect(() => {
     let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
 
-    const handleWebSocketMessage = (e: MessageEvent) => {
+    const handleWebSocketMessage = (e) => {
       if (e.data === "update") {
         console.log("updating");
         console.log(refetch);
@@ -332,21 +332,34 @@ export default function Todo() {
       }
     };
 
-    ws.addEventListener("open", () => {
+    const handleWebSocketOpen = () => {
       console.log("connected");
-    });
+    };
 
-    ws.addEventListener("message", handleWebSocketMessage);
-
-    ws.addEventListener("close", () => {
+    const handleWebSocketClose = () => {
       console.log("disconnected");
       setTimeout(() => {
         console.log("reconnecting");
         ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
+        // Re-add event listeners after reconnecting.
+        ws.addEventListener("open", handleWebSocketOpen);
+        ws.addEventListener("message", handleWebSocketMessage);
+        ws.addEventListener("close", handleWebSocketClose);
       }, 3000);
-    });
-  }, [selectedBoard]);
+    };
 
+    ws.addEventListener("open", handleWebSocketOpen);
+    ws.addEventListener("message", handleWebSocketMessage);
+    ws.addEventListener("close", handleWebSocketClose);
+
+    // Clean up when the component unmounts.
+    return () => {
+      ws.close();
+      ws.removeEventListener("open", handleWebSocketOpen);
+      ws.removeEventListener("message", handleWebSocketMessage);
+      ws.removeEventListener("close", handleWebSocketClose);
+    };
+  }, [selectedBoard]);
   return (
     <>
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
