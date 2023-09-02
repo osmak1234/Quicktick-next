@@ -79,34 +79,33 @@ export default function Board() {
     parent.current && autoAnimate(parent.current);
   }, [parent]);
 
+  //websockets
   useEffect(() => {
     let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-
-    const handleWebSocketMessage = (e: MessageEvent) => {
-      if (e.data === "update") {
-        console.log("updating");
-        setRefresh(refresh + 1);
-      }
-    };
-
     ws.addEventListener("open", () => {
-      console.log("connected");
+      ws.send("hello");
     });
-
-    ws.addEventListener("message", handleWebSocketMessage);
+    ws.addEventListener("message", (e) => {
+      if (e.data === "update") {
+        setRefresh((prev) => prev + 1);
+      }
+    });
 
     ws.addEventListener("close", () => {
       console.log("disconnected");
       setTimeout(() => {
-        console.log("reconnecting");
         ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
-      }, 10);
+        ws.addEventListener("open", () => {
+          ws.send("hello");
+        });
+        ws.addEventListener("message", (e) => {
+          console.log(e.data);
+          if (e.data === "update") {
+            setRefresh((prev) => prev + 1);
+          }
+        });
+      }, 5000);
     });
-
-    return () => {
-      ws.removeEventListener("message", handleWebSocketMessage);
-      ws.close();
-    };
   }, []);
 
   return (

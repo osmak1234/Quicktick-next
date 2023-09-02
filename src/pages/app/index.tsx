@@ -131,6 +131,26 @@ export default function Todo() {
 
   useEffect(() => {
     console.log("refetching \n > \n >");
+    getAllUserBoards()
+      .then((fetchedBoards) => {
+        if (initialLoad) {
+          setBoards((prevBoards) => [...prevBoards, ...fetchedBoards]);
+          setSelectedBoard(boards.find((board) => board.special == 1));
+          setInitialLoad(false);
+        } else {
+          setBoards(fetchedBoards);
+        }
+      })
+      .catch((err: Error) => {
+        console.log(err);
+        // open error modal
+        setErrorMessage(
+          err.message + "Try refreshing." ||
+            "Something went wrong. Try refreshing"
+        );
+        onOpen();
+      });
+    console.log("fetched initial data");
     console.log(selectedBoard);
     if (selectedBoard) {
       if (selectedBoard.special == 1) {
@@ -347,37 +367,23 @@ export default function Todo() {
   useEffect(() => {
     let ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
     ws.addEventListener("open", () => {
-      console.log("connected");
       ws.send("hello");
     });
     ws.addEventListener("message", (e) => {
-      console.log("recieved message");
-      console.log(e.data);
       if (e.data === "update") {
-        console.log("updating");
-        console.log(refetch);
         setRefetch((prev) => prev + 1);
-        console.log(refetch);
       }
     });
 
     ws.addEventListener("close", () => {
-      console.log("disconnected");
       setTimeout(() => {
-        console.log(">trigered reconnect");
         ws = new WebSocket("wss://quicktick-api.fly.dev/ws");
         ws.addEventListener("open", () => {
-          console.log("connected");
           ws.send("hello");
         });
         ws.addEventListener("message", (e) => {
-          console.log("recieved message");
-          console.log(e.data);
           if (e.data === "update") {
-            console.log("updating");
-            console.log(refetch);
             setRefetch((prev) => prev + 1);
-            console.log(refetch);
           }
         });
       }, 5000);
