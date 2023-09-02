@@ -133,13 +133,7 @@ export default function Todo() {
     console.log("refetching \n > \n >");
     getAllUserBoards()
       .then((fetchedBoards) => {
-        if (initialLoad) {
-          setBoards((prevBoards) => [...prevBoards, ...fetchedBoards]);
-          setSelectedBoard(boards.find((board) => board.special == 1));
-          setInitialLoad(false);
-        } else {
-          setBoards(fetchedBoards);
-        }
+        setBoards(fetchedBoards);
       })
       .catch((err: Error) => {
         console.log(err);

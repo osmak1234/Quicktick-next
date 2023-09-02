@@ -65,8 +65,8 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
       };
       setTasks((tasks: Array<Task>) => [...tasks, addTask]);
       setTaskInput("");
-      await createTask(taskDataInput);
       setTaskDescription("");
+      await createTask(taskDataInput);
     }
   };
 
