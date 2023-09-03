@@ -6,6 +6,7 @@ import {
   AlertDialogContent,
   Heading,
   Input,
+  Text,
   Textarea,
   Button,
   useDisclosure,
@@ -15,7 +16,6 @@ import {
   type Task,
   createTask,
 } from "~/api-consume/client/task";
-
 import { v4 as uuidv4 } from "uuid";
 
 interface NewTaskModalProps {
@@ -46,7 +46,7 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
 
   const handleCreateTask = async () => {
     if (taskInput.trim() !== "") {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      setTaskDescription("");
       const taskUUID = uuidv4();
       const taskDataInput: TaskToCreate = {
         name: taskInput,
@@ -164,19 +164,26 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
           focusBorderColor={orange}
           value={taskDescription}
           onChange={(e) => {
+            // if the keypress is enter, then close the modal and set the task description to nothing
             setTaskDescription(e.target.value);
           }}
           placeholder="Description (optional)"
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              onClose();
+            if (e.key === "Enter" && e.shiftKey === false) {
+              e.preventDefault();
               handleCreateTask().catch((err) => {
                 console.log(err);
               });
               setTaskDescription("");
+              onClose();
+            } else if (e.key === "Enter" && e.shiftKey === true) {
+              setTaskDescription(taskDescription + "\n");
             }
           }}
         />
+        <Text color={`${bg}2`} fontSize="sm" textAlign="center" maxW={500}>
+          {"shift + enter for a new line, enter to submit"}
+        </Text>
         <Button
           m={3}
           maxW={500}

@@ -64,7 +64,16 @@ export default function Navbar() {
     getUserData();
   }, [getUserData]); // Include getUserData as a dependency here
 
-  // Rest of your component code
+  //if the user is logged in, and we are on / or /login, redirect to /app, and in query params isn't show=force
+  useEffect(() => {
+    if (
+      user &&
+      (router.pathname === "/" || router.pathname === "/login") &&
+      !router.query.show
+    ) {
+      router.push("/app").catch((err) => console.log(err));
+    }
+  }, [user, router]);
 
   return (
     <Box
@@ -161,7 +170,7 @@ export default function Navbar() {
               </VStack>
             </Box>
             <chakra.a
-              href="/"
+              href="/?show=force"
               title="Quicktick"
               display="flex"
               alignItems="center"
