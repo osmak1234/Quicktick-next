@@ -37,6 +37,8 @@ export default function Board() {
   const bg = useColorModeValue("brand.light.bg", "brand.dark.bg");
   const fg = useColorModeValue("brand.light.fg", "brand.dark.fg");
 
+  const device = Math.random().toString(36).substring(2, 15);
+
   const router = useRouter();
 
   const cancelRef = useRef(null);
@@ -86,7 +88,9 @@ export default function Board() {
       ws.send("hello");
     });
     ws.addEventListener("message", (e) => {
-      if (e.data === "update") {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      const [msg, device_identifier] = e.data.split(";");
+      if (msg == "update" && device_identifier !== device) {
         setRefresh((prev) => prev + 1);
       }
     });
@@ -99,8 +103,9 @@ export default function Board() {
           ws.send("hello");
         });
         ws.addEventListener("message", (e) => {
-          console.log(e.data);
-          if (e.data === "update") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+          const [msg, device_identifier] = e.data.split(";");
+          if (msg == "update" && device_identifier !== device) {
             setRefresh((prev) => prev + 1);
           }
         });
@@ -239,7 +244,7 @@ export default function Board() {
                               onOpen();
                               return;
                             } else {
-                              deleteBoard(board.uuid)
+                              deleteBoard(board.uuid, device)
                                 .then(() => {
                                   setBoards(
                                     boards.filter((b) => b.uuid !== board.uuid)

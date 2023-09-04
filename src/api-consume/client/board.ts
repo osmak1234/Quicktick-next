@@ -29,25 +29,34 @@ export async function getAllUserBoards(): Promise<Board[]> {
   return tasks;
 }
 
-export async function createBoard(boardData: BoardToCreate): Promise<void> {
-  const response = await fetch("https://quicktick-api.fly.dev/post/board", {
-    method: "POST",
-    headers: {
-      origin: "https://quicktick-next.vercel.app",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(boardData),
-    credentials: "include",
-  });
+export async function createBoard(
+  boardData: BoardToCreate,
+  device: string
+): Promise<void> {
+  const response = await fetch(
+    `https://quicktick-api.fly.dev/post/board?device_identifier=${device}`,
+    {
+      method: "POST",
+      headers: {
+        origin: "https://quicktick-next.vercel.app",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(boardData),
+      credentials: "include",
+    }
+  );
 
   await handle_error(response);
 
   return;
 }
 
-export async function deleteBoard(BoardId: string): Promise<void> {
+export async function deleteBoard(
+  BoardId: string,
+  device: string
+): Promise<void> {
   const response = await fetch(
-    `https://quicktick-api.fly.dev/delete/board/${BoardId}`,
+    `https://quicktick-api.fly.dev/delete/board/${BoardId}?device_identifier=${device}`,
     {
       headers: {
         origin: "https://quicktick-next.vercel.app",

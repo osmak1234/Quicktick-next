@@ -70,6 +70,9 @@ enum SortBy {
 import { useRouter } from "next/router";
 
 export default function Todo() {
+  //random 10 character string no ;
+  const device = Math.random().toString(36).substring(2, 15);
+
   const router = useRouter();
 
   // Task inspect/edit modal
@@ -130,7 +133,6 @@ export default function Todo() {
   }, [isOpenTaskModal, submittedEdit]);
 
   useEffect(() => {
-    console.log("refetching \n > \n >");
     getAllUserBoards()
       .then((fetchedBoards) => {
         setBoards(fetchedBoards);
@@ -144,8 +146,6 @@ export default function Todo() {
         );
         onOpen();
       });
-    console.log("fetched initial data");
-    console.log(selectedBoard);
     if (selectedBoard) {
       if (selectedBoard.special == 1) {
         getAllUserTasks()
@@ -234,7 +234,6 @@ export default function Todo() {
   useEffect(() => {
     parent.current && autoAnimate(parent.current);
   }, [parent]);
-  // fetch the user name
 
   const getUserData = useCallback(() => {
     console.log("getting user data");
@@ -349,7 +348,7 @@ export default function Todo() {
         }
       });
       setTasks(updatedTasks);
-      await updateTask(taskUpdateInput);
+      await updateTask(taskUpdateInput, device);
     }
   };
 
@@ -364,7 +363,10 @@ export default function Todo() {
       ws.send("hello");
     });
     ws.addEventListener("message", (e) => {
-      if (e.data === "update") {
+      // the message has 2 parts, message;device, check if device is the same as device var, if yes don't refresh
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      const [msg, device_identifier] = e.data.split(";");
+      if (msg == "update" && device_identifier !== device) {
         setRefetch((prev) => prev + 1);
       }
     });
@@ -376,7 +378,9 @@ export default function Todo() {
           ws.send("hello");
         });
         ws.addEventListener("message", (e) => {
-          if (e.data === "update") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+          const [msg, device_identifier] = e.data.split(";");
+          if (msg == "update" && device_identifier !== device) {
             setRefetch((prev) => prev + 1);
           }
         });
@@ -414,6 +418,7 @@ export default function Todo() {
               fg={fg}
               orange={orange}
               newTaskModal={newTaskModal}
+              device={device}
             />
             <HStack
               display="flex"
@@ -589,7 +594,6 @@ export default function Todo() {
                         onChange={(e) => {
                           e.stopPropagation();
                           const selectedBoardUUID = e.target.value;
-                          console.log(selectedBoardUUID);
 
                           const foundBoard = boards.find(
                             (board) => board.uuid === selectedBoardUUID
@@ -600,15 +604,17 @@ export default function Todo() {
                               action: TaskAction.MoveBoard,
                               NewBoard: selectedBoardUUID,
                             };
-                            updateTask(taskUpdateInput).catch((err: Error) => {
-                              console.log(err);
-                              // open error modal
-                              setErrorMessage(
-                                err.message + "Try refreshing." ||
-                                  "Something went wrong. Try refreshing"
-                              );
-                              onOpen();
-                            });
+                            updateTask(taskUpdateInput, device).catch(
+                              (err: Error) => {
+                                console.log(err);
+                                // open error modal
+                                setErrorMessage(
+                                  err.message + "Try refreshing." ||
+                                    "Something went wrong. Try refreshing"
+                                );
+                                onOpen();
+                              }
+                            );
                             setTasks((prevTasks) =>
                               prevTasks.filter(
                                 (t) => t.uuid !== taskUpdateInput.task_uuid
@@ -699,11 +705,9 @@ export default function Todo() {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (selectedBoard?.special == 2) {
-                          console.log("special 2");
                           setSelectedTask(task);
                           onOpenDelete();
                         } else {
-                          console.log("just moving to archive");
                           // special 2 is archive, so we just move it into it because it isn't already there
                           const taskUpdateInput: TaskUpdateInput = {
                             task_uuid: task.uuid,
@@ -712,15 +716,17 @@ export default function Todo() {
                               boards.find((board) => board.special == 2)
                                 ?.uuid ?? "",
                           };
-                          updateTask(taskUpdateInput).catch((err: Error) => {
-                            console.log(err);
-                            // open error modal
-                            setErrorMessage(
-                              err.message + "Try refreshing." ||
-                                "Something went wrong. Try refreshing"
-                            );
-                            onOpen();
-                          });
+                          updateTask(taskUpdateInput, device).catch(
+                            (err: Error) => {
+                              console.log(err);
+                              // open error modal
+                              setErrorMessage(
+                                err.message + "Try refreshing." ||
+                                  "Something went wrong. Try refreshing"
+                              );
+                              onOpen();
+                            }
+                          );
                           setTasks((prevTasks) =>
                             prevTasks.filter((t) => t.uuid !== task.uuid)
                           );
@@ -864,10 +870,8 @@ export default function Todo() {
                     onClick={(e) => {
                       e.stopPropagation();
                       if (selectedBoard?.special == 2) {
-                        console.log("special 2");
                         onOpenDelete();
                       } else {
-                        console.log("just moving to archive");
                         // special 2 is archive, so we just move it into it because it isn't already there
                         const taskUpdateInput: TaskUpdateInput = {
                           task_uuid: selectedTask.uuid,
@@ -876,15 +880,17 @@ export default function Todo() {
                             boards.find((board) => board.special == 2)?.uuid ??
                             "",
                         };
-                        updateTask(taskUpdateInput).catch((err: Error) => {
-                          console.log(err);
-                          // open error modal
-                          setErrorMessage(
-                            err.message + "Try refreshing." ||
-                              "Something went wrong. Try refreshing"
-                          );
-                          onOpen();
-                        });
+                        updateTask(taskUpdateInput, device).catch(
+                          (err: Error) => {
+                            console.log(err);
+                            // open error modal
+                            setErrorMessage(
+                              err.message + "Try refreshing." ||
+                                "Something went wrong. Try refreshing"
+                            );
+                            onOpen();
+                          }
+                        );
                         setTasks((prevTasks) =>
                           prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
                         );
@@ -1007,7 +1013,7 @@ export default function Todo() {
                         })
                       );
 
-                      updateTask(taskUpdateName).catch((err: Error) => {
+                      updateTask(taskUpdateName, device).catch((err: Error) => {
                         console.log(err);
                         // open error modal
                         setErrorMessage(
@@ -1027,7 +1033,7 @@ export default function Todo() {
                         NewName: editNameInput,
                       };
 
-                      updateTask(taskUpdateDesc).catch((err: Error) => {
+                      updateTask(taskUpdateDesc, device).catch((err: Error) => {
                         console.log(err);
                         // open error modal
                         setErrorMessage(
@@ -1083,7 +1089,6 @@ export default function Todo() {
                 <Button
                   ref={saveChangesRef}
                   onClick={() => {
-                    console.log(selectedTask);
                     if (selectedTask) {
                       // submit the edited description
                       setEditDescription(false);
@@ -1107,7 +1112,7 @@ export default function Todo() {
                         })
                       );
 
-                      updateTask(taskUpdateName).catch((err: Error) => {
+                      updateTask(taskUpdateName, device).catch((err: Error) => {
                         console.log(err);
                         // open error modal
                         setErrorMessage(
@@ -1126,7 +1131,7 @@ export default function Todo() {
                         NewName: editNameInput,
                       };
 
-                      updateTask(taskUpdateDesc).catch((err: Error) => {
+                      updateTask(taskUpdateDesc, device).catch((err: Error) => {
                         console.log(err);
                         // open error modal
                         setErrorMessage(
@@ -1303,22 +1308,23 @@ export default function Todo() {
                   }}
                   w="full"
                   onClick={() => {
-                    console.log(selectedTask);
                     if (!selectedTask) {
                       return;
                     }
                     setTasks((prevTasks) =>
                       prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
                     );
-                    deleteTask(selectedTask.uuid).catch((err: Error) => {
-                      console.log(err);
-                      // open error modal
-                      setErrorMessage(
-                        err.message + "Try refreshing." ||
-                          "Something went wrong. Try refreshing"
-                      );
-                      onOpen();
-                    });
+                    deleteTask(selectedTask.uuid, device).catch(
+                      (err: Error) => {
+                        console.log(err);
+                        // open error modal
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing"
+                        );
+                        onOpen();
+                      }
+                    );
                     onCloseDelete();
                   }}
                   ml={3}

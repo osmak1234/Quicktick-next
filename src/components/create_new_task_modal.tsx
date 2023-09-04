@@ -26,6 +26,7 @@ interface NewTaskModalProps {
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   isOpenTaskModal: boolean;
   newTaskModal: number;
+  device: string;
 }
 
 export const NewTaskModal: FC<NewTaskModalProps> = ({
@@ -36,6 +37,7 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
   setTasks,
   isOpenTaskModal,
   newTaskModal,
+  device,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -66,7 +68,7 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
       setTasks((tasks: Array<Task>) => [...tasks, addTask]);
       setTaskInput("");
       setTaskDescription("");
-      await createTask(taskDataInput);
+      await createTask(taskDataInput, device);
     }
   };
 
