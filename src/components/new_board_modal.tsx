@@ -24,6 +24,7 @@ interface NewTaskModalProps {
   setBoards: React.Dispatch<React.SetStateAction<Board[]>>;
   isOpenBoardModal: boolean;
   newBoardModal: number;
+  device: string;
 }
 
 export const NewBoardModal: FC<NewTaskModalProps> = ({
@@ -33,6 +34,7 @@ export const NewBoardModal: FC<NewTaskModalProps> = ({
   setBoards,
   isOpenBoardModal,
   newBoardModal,
+  device,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -56,7 +58,7 @@ export const NewBoardModal: FC<NewTaskModalProps> = ({
       };
       setBoards((boards: Array<Board>) => [...boards, addBoard]);
       setBoardInput("");
-      await createBoard(boardDataInput);
+      await createBoard(boardDataInput, device);
     }
   };
 

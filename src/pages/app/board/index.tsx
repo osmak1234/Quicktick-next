@@ -125,6 +125,7 @@ export default function Board() {
           setBoards={setBoards}
           isOpenBoardModal={false}
           newBoardModal={newBoardModal}
+          device={device}
         />
         <Box
           ref={parent}
