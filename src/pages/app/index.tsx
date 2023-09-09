@@ -96,8 +96,6 @@ export default function Todo() {
 
   const [isLargerThan768] = useMediaQuery("(min-width: 768px)");
 
-  const [initialLoad, setInitialLoad] = useState(true);
-
   // error modal
   const [errorMessage, setErrorMessage] = useState("");
   const cancelRef = useRef<HTMLButtonElement | null>(null);
@@ -133,28 +131,14 @@ export default function Todo() {
   }, [isOpenTaskModal, submittedEdit]);
 
   useEffect(() => {
-    getAllUserBoards()
-      .then((fetchedBoards) => {
-        setBoards(fetchedBoards);
-      })
-      .catch((err: Error) => {
-        console.log(err);
-        // open error modal
-        setErrorMessage(
-          err.message + "Try refreshing." ||
-            "Something went wrong. Try refreshing"
-        );
-        onOpen();
-      });
     if (selectedBoard) {
       if (selectedBoard.special == 1) {
         getAllUserTasks()
           .then((tasks) => {
-            const archive_uuid = boards.find(
-              (board) => board.special == 2
-            )?.uuid;
+            const archive_uuid = boards.find((board) => board.special == 2)
+              ?.uuid;
             const to_set_tasks = tasks.filter(
-              (task) => task.board_uuid != archive_uuid
+              (task) => task.board_uuid != archive_uuid,
             );
 
             setTasks(to_set_tasks);
@@ -164,7 +148,7 @@ export default function Todo() {
             // open error modal
             setErrorMessage(
               err.message + "Try refreshing." ||
-                "Something went wrong. Try refreshing"
+                "Something went wrong. Try refreshing",
             );
             onOpen();
           });
@@ -176,17 +160,30 @@ export default function Todo() {
             // open error modal
             setErrorMessage(
               err.message + "Try refreshing." ||
-                "Something went wrong. Try refreshing"
+                "Something went wrong. Try refreshing",
             );
             onOpen();
           });
       }
     } else {
+      getAllUserBoards()
+        .then((fetchedBoards) => {
+          setBoards(fetchedBoards);
+        })
+        .catch((err: Error) => {
+          console.log(err);
+          // open error modal
+          setErrorMessage(
+            err.message + "Try refreshing." ||
+              "Something went wrong. Try refreshing",
+          );
+          onOpen();
+        });
       getAllUserTasks()
         .then((tasks) => {
           const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
           const to_set_tasks = tasks.filter(
-            (task) => task.board_uuid != archive_uuid
+            (task) => task.board_uuid != archive_uuid,
           );
 
           setTasks(to_set_tasks);
@@ -196,7 +193,7 @@ export default function Todo() {
           // open error modal
           setErrorMessage(
             err.message + "Try refreshing." ||
-              "Something went wrong. Try refreshing"
+              "Something went wrong. Try refreshing",
           );
           onOpen();
         });
@@ -250,7 +247,7 @@ export default function Todo() {
         // open error modal
         setErrorMessage(
           err.message + "Try refreshing." ||
-            "Something went wrong. Try refreshing"
+            "Something went wrong. Try refreshing",
         );
         onOpen();
       });
@@ -265,47 +262,18 @@ export default function Todo() {
   function fetch_initial_data() {
     getAllUserBoards()
       .then((fetchedBoards) => {
-        if (initialLoad) {
-          setBoards((prevBoards) => [...prevBoards, ...fetchedBoards]);
-          setSelectedBoard(boards.find((board) => board.special == 1));
-          setInitialLoad(false);
-        } else {
-          setBoards(fetchedBoards);
-        }
+        setBoards((prevBoards) => [...prevBoards, ...fetchedBoards]);
+        setSelectedBoard(boards.find((board) => board.special == 1));
       })
       .catch((err: Error) => {
         console.log(err);
         // open error modal
         setErrorMessage(
           err.message + "Try refreshing." ||
-            "Something went wrong. Try refreshing"
+            "Something went wrong. Try refreshing",
         );
         onOpen();
       });
-    console.log("fetched initial data");
-
-    setSelectedBoard(boards.find((board) => board.special == 1));
-    // Get all all tasks
-    getAllUserTasks()
-      .then((tasks) => {
-        const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
-        const to_set_tasks = tasks.filter(
-          (task) => task.board_uuid != archive_uuid
-        );
-
-        setTasks(to_set_tasks);
-      })
-      .catch((err: Error) => {
-        console.log(err);
-        // open error modal
-        setErrorMessage(
-          err.message + "Try refreshing." ||
-            "Something went wrong. Try refreshing"
-        );
-        onOpen();
-      });
-
-    setSelectedBoard(boards.find((board) => board.special == 1));
   }
   useEffect(() => {
     fetch_initial_data();
@@ -363,10 +331,13 @@ export default function Todo() {
       ws.send("hello");
     });
     ws.addEventListener("message", (e) => {
+      console.log(e.data);
       // the message has 2 parts, message;device, check if device is the same as device var, if yes don't refresh
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       const [msg, device_identifier] = e.data.split(";");
+      console.log(msg, device_identifier, device);
       if (msg == "update" && device_identifier !== device) {
+        console.log("refetching");
         setRefetch((prev) => prev + 1);
       }
     });
@@ -443,7 +414,7 @@ export default function Todo() {
                 onChange={(e) => {
                   const selectedBoardUUID = e.target.value;
                   const foundBoard = boards.find(
-                    (board) => board.uuid === selectedBoardUUID
+                    (board) => board.uuid === selectedBoardUUID,
                   );
                   if (foundBoard) {
                     setSelectedBoard(foundBoard);
@@ -533,7 +504,7 @@ export default function Todo() {
                         // open error modal
                         setErrorMessage(
                           err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing"
+                            "Something went wrong. Try refreshing",
                         );
                         onOpen();
                       });
@@ -596,7 +567,7 @@ export default function Todo() {
                           const selectedBoardUUID = e.target.value;
 
                           const foundBoard = boards.find(
-                            (board) => board.uuid === selectedBoardUUID
+                            (board) => board.uuid === selectedBoardUUID,
                           );
                           if (foundBoard) {
                             const taskUpdateInput: TaskUpdateInput = {
@@ -610,15 +581,15 @@ export default function Todo() {
                                 // open error modal
                                 setErrorMessage(
                                   err.message + "Try refreshing." ||
-                                    "Something went wrong. Try refreshing"
+                                    "Something went wrong. Try refreshing",
                                 );
                                 onOpen();
-                              }
+                              },
                             );
                             setTasks((prevTasks) =>
                               prevTasks.filter(
-                                (t) => t.uuid !== taskUpdateInput.task_uuid
-                              )
+                                (t) => t.uuid !== taskUpdateInput.task_uuid,
+                              ),
                             );
                           }
                         }}
@@ -722,13 +693,13 @@ export default function Todo() {
                               // open error modal
                               setErrorMessage(
                                 err.message + "Try refreshing." ||
-                                  "Something went wrong. Try refreshing"
+                                  "Something went wrong. Try refreshing",
                               );
                               onOpen();
-                            }
+                            },
                           );
                           setTasks((prevTasks) =>
-                            prevTasks.filter((t) => t.uuid !== task.uuid)
+                            prevTasks.filter((t) => t.uuid !== task.uuid),
                           );
                         }
                       }}
@@ -804,7 +775,7 @@ export default function Todo() {
                           // open error modal
                           setErrorMessage(
                             err.message + "Try refreshing." ||
-                              "Something went wrong. Try refreshing"
+                              "Something went wrong. Try refreshing",
                           );
                           onOpen();
                         });
@@ -886,13 +857,13 @@ export default function Todo() {
                             // open error modal
                             setErrorMessage(
                               err.message + "Try refreshing." ||
-                                "Something went wrong. Try refreshing"
+                                "Something went wrong. Try refreshing",
                             );
                             onOpen();
-                          }
+                          },
                         );
                         setTasks((prevTasks) =>
-                          prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
+                          prevTasks.filter((t) => t.uuid !== selectedTask.uuid),
                         );
                       }
                     }}
@@ -1010,7 +981,7 @@ export default function Todo() {
                           } else {
                             return t;
                           }
-                        })
+                        }),
                       );
 
                       updateTask(taskUpdateName, device).catch((err: Error) => {
@@ -1018,7 +989,7 @@ export default function Todo() {
                         // open error modal
                         setErrorMessage(
                           err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing"
+                            "Something went wrong. Try refreshing",
                         );
                         onOpen();
                       });
@@ -1038,7 +1009,7 @@ export default function Todo() {
                         // open error modal
                         setErrorMessage(
                           err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing"
+                            "Something went wrong. Try refreshing",
                         );
                         onOpen();
                       });
@@ -1109,7 +1080,7 @@ export default function Todo() {
                           } else {
                             return t;
                           }
-                        })
+                        }),
                       );
 
                       updateTask(taskUpdateName, device).catch((err: Error) => {
@@ -1117,7 +1088,7 @@ export default function Todo() {
                         // open error modal
                         setErrorMessage(
                           err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing"
+                            "Something went wrong. Try refreshing",
                         );
                         onOpen();
                       });
@@ -1136,7 +1107,7 @@ export default function Todo() {
                         // open error modal
                         setErrorMessage(
                           err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing"
+                            "Something went wrong. Try refreshing",
                         );
                         onOpen();
                       });
@@ -1312,7 +1283,7 @@ export default function Todo() {
                       return;
                     }
                     setTasks((prevTasks) =>
-                      prevTasks.filter((t) => t.uuid !== selectedTask.uuid)
+                      prevTasks.filter((t) => t.uuid !== selectedTask.uuid),
                     );
                     deleteTask(selectedTask.uuid, device).catch(
                       (err: Error) => {
@@ -1320,10 +1291,10 @@ export default function Todo() {
                         // open error modal
                         setErrorMessage(
                           err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing"
+                            "Something went wrong. Try refreshing",
                         );
                         onOpen();
-                      }
+                      },
                     );
                     onCloseDelete();
                   }}
