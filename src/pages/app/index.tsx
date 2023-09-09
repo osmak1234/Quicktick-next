@@ -69,7 +69,7 @@ import { useRouter } from "next/router";
 
 export default function Todo() {
   //random 10 character string no ;
-  const device = Math.random().toString(36).substring(2, 15);
+  const [device] = useState(Math.random().toString(36).substring(2, 15));
 
   const router = useRouter();
 
@@ -199,8 +199,7 @@ export default function Todo() {
   }
   useEffect(() => {
     fetch_initial_data();
-    setRefetch((prev) => prev + 1);
-  }, [setRefetch]);
+  }, []);
 
   useEffect(() => {
     setArchiveUUID(boards.find((board) => board.special == 2)?.uuid ?? "");
@@ -391,8 +390,6 @@ export default function Todo() {
               (
                 task, // filter out tasks that don't belong to the selected board
               ) => {
-                console.log(task);
-                console.log(selectedBoard);
                 if (selectedBoard?.special == 1) {
                   //find special == 2 board_uuid
                   const archive_uuid = boards.find(
