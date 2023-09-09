@@ -39,16 +39,6 @@ const global = {
 export const theme = extendTheme({ colors, config, components, global });
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-  console.log(`
-________________ 
-< I use arch btw >
- ---------------- 
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||
-`);
   return (
     <ChakraProvider theme={theme}>
       <AnimatePresence mode="wait" initial={false}>
