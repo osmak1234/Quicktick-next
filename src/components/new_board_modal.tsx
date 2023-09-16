@@ -91,6 +91,7 @@ export const NewBoardModal: FC<NewTaskModalProps> = ({
   }, [isOpen, isOpenBoardModal, onOpen, inputRef]);
 
   const [prevValue, setPrevValue] = useState(0);
+
   useEffect(() => {
     if (newBoardModal !== prevValue) {
       setPrevValue(newBoardModal);

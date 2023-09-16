@@ -101,6 +101,7 @@ export const NewTaskModal: FC<NewTaskModalProps> = ({
   }, [isOpen, isOpenTaskModal, onOpen, inputRef]);
 
   const [prevValue, setPrevValue] = useState(0);
+
   useEffect(() => {
     if (newTaskModal !== prevValue) {
       setPrevValue(newTaskModal);

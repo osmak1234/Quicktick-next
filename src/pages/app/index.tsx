@@ -38,7 +38,7 @@ import {
   TaskAction,
   type Task,
   type TaskUpdateInput,
-  getBoardTasks,
+  deleteAllBoardTasks,
 } from "../../api-consume/client/task";
 
 import {
@@ -105,6 +105,12 @@ export default function Todo() {
     isOpen: isOpenDelete,
     onOpen: onOpenDelete,
     onClose: onCloseDelete,
+  } = useDisclosure();
+
+  const {
+    isOpen: isInfoOpen,
+    onOpen: onInfoOpen,
+    onClose: onInfoClose,
   } = useDisclosure();
 
   const openTaskModal = (task: Task) => {
@@ -305,9 +311,24 @@ export default function Todo() {
         flexDirection="column"
         // Listen for keypresses
       >
-        <Heading as="h1" size="2xl" color={fg}>
-          Todo
-        </Heading>
+        <HStack>
+          <Heading as="h1" size="2xl" color={fg}>
+            Todo
+          </Heading>
+          <Text
+            cursor="pointer"
+            _hover={{
+              color: `${orange}`,
+            }}
+            color={`${fg}2`}
+            fontSize="xl"
+            onClick={() => {
+              onInfoOpen();
+            }}
+          >
+            ?
+          </Text>
+        </HStack>
         <>
           <NewTaskModal
             isOpenTaskModal={isOpenTaskModal}
@@ -383,6 +404,73 @@ export default function Todo() {
               <option value={SortBy.CompletedDescending}>Completed</option>
             </Select>
           </HStack>
+
+          {selectedBoard?.special !== 1 && (
+            <Button
+              onClick={() => {
+                if (selectedBoard) {
+                  if (selectedBoard.special == 2) {
+                    deleteAllBoardTasks(selectedBoard.uuid, device).catch(
+                      (err: Error) => {
+                        console.log(err);
+                        setErrorMessage(
+                          err.message + "Try refreshing." ||
+                            "Something went wrong. Try refreshing",
+                        );
+                        onOpen();
+                      },
+                    );
+                    setTasks([]);
+                  } else {
+                    const archive_uuid = boards.find(
+                      (board) => board.special == 2,
+                    )?.uuid;
+
+                    if (archive_uuid) {
+                      // move all tasks to archive
+                      const taskUpdateInput: TaskUpdateInput = {
+                        task_uuid: "won't be used",
+                        action: TaskAction.MovMoveAllTasksFromBoard,
+                        NewBoard: archive_uuid,
+                        OldBoard: selectedBoard?.uuid ?? "",
+                      };
+                      console.log(taskUpdateInput);
+
+                      // change the board uuid of all tasks in this board
+                      setTasks((prevTasks) =>
+                        prevTasks.filter(
+                          (task) => task.board_uuid !== selectedBoard?.uuid,
+                        ),
+                      );
+
+                      updateTask(taskUpdateInput, device).catch(
+                        (err: Error) => {
+                          console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing",
+                          );
+                          onOpen();
+                        },
+                      );
+                    }
+                  }
+                }
+              }}
+              bg={`${bg}2`}
+              color={`${fg}`}
+              _hover={{ bg: `${bg}3` }}
+              _active={{ bg: `${bg}1` }}
+              maxW={500}
+              w="full"
+              mt={4}
+            >
+              {selectedBoard?.special == 2
+                ? "Delete all permanently"
+                : "Move all to archive"}
+            </Button>
+          )}
 
           {tasks
             .sort((a, b) => sortTasks(sort, a, b))
@@ -1248,6 +1336,72 @@ export default function Todo() {
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>
+
+        <AlertDialog
+          isOpen={isInfoOpen}
+          leastDestructiveRef={emptyRef}
+          onClose={onInfoClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent
+              bg={`${bg}_h`}
+              color={`${fg}`}
+              display={"flex"}
+              flexDirection={"column"}
+            >
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                How to
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <Text
+                  color={`${fg}1`}
+                  fontSize="md"
+                  fontWeight="bold"
+                  mb={2}
+                  overflowWrap="anywhere"
+                >
+                  {isLargerThan768 ? (
+                    <Text>
+                      - To create task use the orange button, <br />
+                      - Click on a task or the pencil to edit. <br />
+                      - To delete a task, click on the X.
+                      <br />- To move a task to another board, click on the
+                      arrow. <br />
+                      - To mark a task as completed, click on the square.
+                      <br />- To delete all tasks in a board, click on the red
+                      button. <br />
+                      - To change the board, click on the dropdown.
+                      <br />- To change the sort order, click on the other
+                      dropdown. <br />
+                    </Text>
+                  ) : (
+                    <Text>
+                      - Start typing to add a task <br />
+                      - Click on a task to edit.
+                      <br />
+                      - To delete a task, click on the X.
+                      <br />
+                      - To move a task to another board, click on the arrow.
+                      <br />
+                      - To mark a task as completed, click on the square.
+                      <br />
+                      - To delete all tasks in a board, click on the red button.
+                      <br />
+                      - To change the board, click on the dropdown.
+                      <br />
+                      - To change the sort order, click on the other dropdown.
+                      <br />
+                    </Text>
+                  )}
+                </Text>
+              </AlertDialogBody>
+
+              <AlertDialogFooter></AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+
         <Button
           zIndex={100}
           hidden={isLargerThan768}

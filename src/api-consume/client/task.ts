@@ -16,6 +16,21 @@ export interface TaskToCreate {
   board_uuid: string;
 }
 
+export async function deleteAllBoardTasks(
+  board_uuid: string,
+  device_identifier: string,
+): Promise<void> {
+  const response = await fetch(
+    `https://quicktick-api.fly.dev/delete/task/from_board/${board_uuid}?device_identifier=${device_identifier}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+
+  await handle_error(response);
+}
+
 export async function getAllUserTasks(): Promise<Task[]> {
   const response = await fetch(
     "https://quicktick-api.fly.dev/get/all_user_tasks",
@@ -25,7 +40,7 @@ export async function getAllUserTasks(): Promise<Task[]> {
         origin: "https://quicktick-next.vercel.app",
       }, //
       credentials: "include",
-    }
+    },
   );
 
   await handle_error(response);
@@ -35,7 +50,7 @@ export async function getAllUserTasks(): Promise<Task[]> {
 
 export async function createTask(
   taskData: TaskToCreate,
-  device: string
+  device: string,
 ): Promise<void> {
   const response = await fetch(
     `https://quicktick-api.fly.dev/post/create_task?device_identifier=${device}`,
@@ -46,7 +61,7 @@ export async function createTask(
       },
       body: JSON.stringify(taskData),
       credentials: "include",
-    }
+    },
   );
 
   await handle_error(response);
@@ -64,7 +79,7 @@ export async function getBoardTasks(boardId: string): Promise<Task[]> {
         "Content-Type": "application/json",
       },
       credentials: "include",
-    }
+    },
   );
   await handle_error(response);
 
@@ -74,14 +89,14 @@ export async function getBoardTasks(boardId: string): Promise<Task[]> {
 
 export async function deleteTask(
   taskId: string,
-  device: string
+  device: string,
 ): Promise<void> {
   const response = await fetch(
     `https://quicktick-api.fly.dev/delete/task/${taskId}?device_identifier=${device}`,
     {
       method: "DELETE",
       credentials: "include",
-    }
+    },
   );
 
   await handle_error(response);
@@ -95,6 +110,7 @@ export enum TaskAction {
   ToggleTask = "ToggleTask",
   ChangeOrder = "ChangeOrder",
   MoveBoard = "MoveBoard",
+  MovMoveAllTasksFromBoard = "MoveAllTasksFromBoard",
 }
 
 export interface TaskUpdateInput {
@@ -104,11 +120,12 @@ export interface TaskUpdateInput {
   NewDesc?: string;
   ChangeOrder?: number;
   NewBoard?: string;
+  OldBoard?: string;
 }
 
 export async function updateTask(
   updateData: TaskUpdateInput,
-  device: string
+  device: string,
 ): Promise<void> {
   const response = await fetch(
     `https://quicktick-api.fly.dev/patch/task?device_identifier=${device}`,
@@ -120,7 +137,7 @@ export async function updateTask(
       },
       body: JSON.stringify(updateData),
       credentials: "include",
-    }
+    },
   );
 
   await handle_error(response);
