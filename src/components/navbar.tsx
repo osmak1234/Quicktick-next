@@ -64,7 +64,7 @@ export default function Navbar() {
       (router.pathname === "/" || router.pathname === "/login") &&
       !router.query.show
     ) {
-      router.push("/app").catch((err) => console.log(err));
+      router.push("/app/board").catch((err) => console.log(err));
     }
   }, [user, router]);
 
