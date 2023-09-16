@@ -315,19 +315,6 @@ export default function Todo() {
           <Heading as="h1" size="2xl" color={fg}>
             Todo
           </Heading>
-          <Text
-            cursor="pointer"
-            _hover={{
-              color: `${orange}`,
-            }}
-            color={`${fg}2`}
-            fontSize="xl"
-            onClick={() => {
-              onInfoOpen();
-            }}
-          >
-            ?
-          </Text>
         </HStack>
         <>
           <NewTaskModal
@@ -350,10 +337,26 @@ export default function Todo() {
             mt={4}
           >
             {isLargerThan768 && (
-              <Text color={`${fg}4`} fontSize="xl" fontWeight="bold">
-                Start typing to add a task
+              <Text color={`${fg}4`} fontSize="sm" fontWeight="bold">
+                Start typing to create
               </Text>
             )}
+            <Spacer />
+
+            <Text
+              cursor="pointer"
+              _hover={{
+                color: `${orange}`,
+              }}
+              fontWeight="bold"
+              color={`${fg}2`}
+              fontSize="xl"
+              onClick={() => {
+                onInfoOpen();
+              }}
+            >
+              ?
+            </Text>
             <Spacer />
 
             <Select
@@ -465,6 +468,9 @@ export default function Todo() {
               maxW={500}
               w="full"
               mt={4}
+              p={4}
+              borderRadius="md"
+              boxShadow="md"
             >
               {selectedBoard?.special == 2
                 ? "Delete all permanently"
