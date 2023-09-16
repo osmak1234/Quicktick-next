@@ -15,6 +15,7 @@ import {
   SimpleGrid,
   Image,
   Tooltip,
+  Spacer,
 } from "@chakra-ui/react";
 
 import { theme } from "~/pages/_app";
@@ -149,8 +150,6 @@ export default function Board() {
           w="full"
           maxW="700px"
           mx="auto"
-          bg={`${bg}_h`}
-          shadow="lg"
           rounded="lg"
           overflowY="hidden"
           overflowX="scroll"
@@ -162,21 +161,21 @@ export default function Board() {
                 You have no boards
               </Heading>
             ) : (
-              <SimpleGrid
-                columns={{ base: 1, sm: 2, md: 3, lg: 3 }}
-                spacing={{ base: 6, sm: 8, md: 8 }}
-                overflowX={"scroll"}
-              >
+              <>
                 {boards.map((board) => (
                   <Box
                     key={board.uuid}
                     bg={`${bg}_h`}
                     shadow="lg"
+                    w="full"
+                    display="flex"
+                    flexDir="row"
                     rounded="lg"
                     borderWidth="1px"
                     borderColor={`${bg}2`}
                     textAlign="center"
-                    pb={4}
+                    p={4}
+                    m={2}
                     _hover={{
                       borderColor: "brand.light.fg3",
                     }}
@@ -194,19 +193,14 @@ export default function Board() {
                         .catch((err) => console.log(err));
                     }}
                   >
-                    <Image
-                      src="/gruvbox_todo_board.jpg"
-                      alt={board.name}
-                      width="100%"
-                      height="140px"
-                      objectFit="cover"
-                      style={{
-                        borderRadius: "5%",
-                      }}
-                    />
+                    <Heading as="h2" size="md" color={fg} mt={2} mr={2}>
+                      {board.label ?? "📝"}
+                    </Heading>
+
                     <Heading as="h2" size="md" color={fg} mt={2}>
                       {board.name}
                     </Heading>
+                    <Spacer />
 
                     <Tooltip
                       label="Delete board"
@@ -262,7 +256,7 @@ export default function Board() {
                     </Tooltip>
                   </Box>
                 ))}
-              </SimpleGrid>
+              </>
             )}
           </>
         </Box>

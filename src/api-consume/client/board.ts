@@ -3,11 +3,13 @@ export interface Board {
   name: string;
   user_uuid: string;
   special?: number;
+  label?: string;
 }
 
 export interface BoardToCreate {
   name: string;
   uuid: string;
+  label?: string;
 }
 
 import { handle_error } from "../helper";
@@ -21,7 +23,7 @@ export async function getAllUserBoards(): Promise<Board[]> {
         origin: "https://quicktick-next.vercel.app",
       }, //
       credentials: "include",
-    }
+    },
   );
 
   await handle_error(response);
@@ -31,8 +33,12 @@ export async function getAllUserBoards(): Promise<Board[]> {
 
 export async function createBoard(
   boardData: BoardToCreate,
-  device: string
+  device: string,
 ): Promise<void> {
+  if (!boardData.label) {
+    boardData.label = "📝";
+  }
+
   const response = await fetch(
     `https://quicktick-api.fly.dev/post/board?device_identifier=${device}`,
     {
@@ -43,7 +49,7 @@ export async function createBoard(
       },
       body: JSON.stringify(boardData),
       credentials: "include",
-    }
+    },
   );
 
   await handle_error(response);
@@ -53,7 +59,7 @@ export async function createBoard(
 
 export async function deleteBoard(
   BoardId: string,
-  device: string
+  device: string,
 ): Promise<void> {
   const response = await fetch(
     `https://quicktick-api.fly.dev/delete/board/${BoardId}?device_identifier=${device}`,
@@ -63,7 +69,7 @@ export async function deleteBoard(
       },
       method: "DELETE",
       credentials: "include",
-    }
+    },
   );
 
   await handle_error(response);

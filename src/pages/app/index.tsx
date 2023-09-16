@@ -171,9 +171,6 @@ export default function Todo(props: {
             onOpen();
           });
       }
-      console.log(tasks);
-      console.log(selectedBoard);
-      console.log(boards);
     }
   }, [selectedBoard, refetch]);
 

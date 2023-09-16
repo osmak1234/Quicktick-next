@@ -21,16 +21,16 @@
     "@trpc/react-query": "^10.34.0",
     "@trpc/server": "^10.34.0",
     "@types/uuid": "^9.0.2",
-    "@types/ws": "^8.5.5",
     "email-validator": "^2.0.4",
+    "emoji-picker-react": "^4.5.1",
     "framer-motion": "^10.15.1",
     "next": "^13.4.2",
+    "picmo": "^5.8.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.10.1",
     "superjson": "^1.13.1",
     "uuid": "^9.0.0",
-    "ws": "^8.13.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
@@ -42,8 +42,7 @@
     "@typescript-eslint/parser": "6.0.0",
     "eslint": "^8.40.0",
     "eslint-config-next": "^13.4.2",
-    "typescript": "^5.0.4",
-    "ws`": "link:@types/ws`"
+    "typescript": "^5.0.4"
   },
   "ct3aMetadata": {
     "initVersion": "7.18.0"
