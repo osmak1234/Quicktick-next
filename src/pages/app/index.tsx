@@ -1,5 +1,6 @@
 import { theme } from "../_app";
 import { NewTaskModal } from "../../components/create_new_task_modal";
+
 import {
   useColorModeValue,
   useMediaQuery,
@@ -67,8 +68,19 @@ enum SortBy {
 
 import { useRouter } from "next/router";
 
-export default function Todo() {
-  //random 10 character string no ;
+import { type NextPageContext } from "next";
+
+// eslint-disable-next-line @typescript-eslint/require-await
+Todo.getInitialProps = async (ctx: NextPageContext) => {
+  const { query } = ctx;
+  return { query };
+};
+
+export default function Todo(props: {
+  query: {
+    boardUUID?: string;
+  };
+}) {
   const [device] = useState(Math.random().toString(36).substring(2, 15));
 
   const router = useRouter();
@@ -135,24 +147,33 @@ export default function Todo() {
     }
   }, [isOpenTaskModal, submittedEdit]);
 
-  useEffect(() => {
-    if (selectedBoard) {
-      const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
-      setArchiveUUID(archive_uuid ?? "");
+  const [usedQuery, setUsedQuery] = useState(false);
 
-      getAllUserTasks()
-        .then((tasks) => {
-          setTasks(tasks);
-        })
-        .catch((err: Error) => {
-          console.log(err);
-          // open error modal
-          setErrorMessage(
-            err.message + "Try refreshing." ||
-              "Something went wrong. Try refreshing",
-          );
-          onOpen();
-        });
+  useEffect(() => {
+    if (!usedQuery && props.query.boardUUID) {
+      setUsedQuery(true);
+    } else {
+      if (selectedBoard) {
+        const archive_uuid = boards.find((board) => board.special == 2)?.uuid;
+        setArchiveUUID(archive_uuid ?? "");
+
+        getAllUserTasks()
+          .then((tasks) => {
+            setTasks(tasks);
+          })
+          .catch((err: Error) => {
+            console.log(err);
+            // open error modal
+            setErrorMessage(
+              err.message + "Try refreshing." ||
+                "Something went wrong. Try refreshing",
+            );
+            onOpen();
+          });
+      }
+      console.log(tasks);
+      console.log(selectedBoard);
+      console.log(boards);
     }
   }, [selectedBoard, refetch]);
 
@@ -185,12 +206,26 @@ export default function Todo() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
 
+  const [initialDataFetched, setInitialDataFetched] = useState(false);
+
   function fetch_initial_data() {
     getAllUserBoards()
       .then((fetchedBoards) => {
         setBoards(fetchedBoards);
-        if (router.query.boardUUID == undefined) {
+
+        // check props for boardUUID query
+        const { query } = props;
+        const boardUUID = query.boardUUID;
+
+        if (boardUUID == undefined) {
           setSelectedBoard(boards.find((board) => board.special == 1));
+        } else {
+          const foundBoard = fetchedBoards.find(
+            (board) => board.uuid === boardUUID,
+          );
+          if (foundBoard != undefined) {
+            setSelectedBoard(foundBoard);
+          }
         }
       })
       .catch((err: Error) => {
@@ -204,8 +239,11 @@ export default function Todo() {
       });
   }
   useEffect(() => {
-    fetch_initial_data();
-  }, []);
+    if (!initialDataFetched) {
+      fetch_initial_data();
+      setInitialDataFetched(true);
+    }
+  }, [router, initialDataFetched]);
 
   useEffect(() => {
     setArchiveUUID(boards.find((board) => board.special == 2)?.uuid ?? "");
@@ -216,25 +254,6 @@ export default function Todo() {
       setSelectedBoard(boards.find((board) => board.special == 1));
     }
   }, [archiveUUID]);
-
-  const [usedQueryParams, setUsedQueryParams] = useState(false);
-
-  useEffect(() => {
-    if (usedQueryParams) {
-      return;
-    }
-    const { query } = router;
-
-    const boardUUID = query.boardUUID;
-
-    if (boardUUID) {
-      const foundBoard = boards.find((board) => board.uuid === boardUUID);
-      if (foundBoard) {
-        setSelectedBoard(foundBoard);
-      }
-    }
-    setUsedQueryParams(true);
-  }, [boards, usedQueryParams]);
 
   const toggleTask = async (taskUUID: string) => {
     const taskToUpdate = tasks.find((task) => task.uuid === taskUUID);
@@ -309,14 +328,15 @@ export default function Todo() {
         height="100vh"
         overflow="scroll"
         flexDirection="column"
+        key={"box"}
         // Listen for keypresses
       >
-        <HStack>
+        <HStack key={"h-stack"}>
           <Heading as="h1" size="2xl" color={fg}>
             Todo
           </Heading>
         </HStack>
-        <>
+        <div key={"div"}>
           <NewTaskModal
             isOpenTaskModal={isOpenTaskModal}
             setTasks={setTasks}
@@ -335,6 +355,7 @@ export default function Todo() {
             w="full"
             maxW={500}
             mt={4}
+            key={"h-stack-2"}
           >
             {isLargerThan768 && (
               <Text color={`${fg}4`} fontSize="sm" fontWeight="bold">
@@ -378,6 +399,7 @@ export default function Todo() {
               maxWidth="150px"
               alignSelf="flex-end"
               mt={isLargerThan768 ? 0 : 4}
+              key={"select1"}
             >
               {boards.map((board) => (
                 <option key={board.uuid} value={board.uuid}>
@@ -398,18 +420,34 @@ export default function Todo() {
               maxWidth="150px"
               alignSelf="flex-end"
               mt={isLargerThan768 ? 0 : 4} // Adjust the margin for smaller screens
+              key={"select"}
             >
-              <option value={SortBy.NameAscending}>A - Z</option>
-              <option value={SortBy.NameDescending}>Z - A</option>
+              <option value={SortBy.NameAscending} key={SortBy.NameAscending}>
+                A - Z
+              </option>
+              <option value={SortBy.NameDescending} key={SortBy.NameDescending}>
+                Z - A
+              </option>
               {/* <option value={SortBy.DateAscending}>Date Ascending</option> */}
               {/*<option value={SortBy.DateDescending}>Date Descending</option>*/}
-              <option value={SortBy.CompletedAscending}>Incompleted</option>
-              <option value={SortBy.CompletedDescending}>Completed</option>
+              <option
+                value={SortBy.CompletedAscending}
+                key={SortBy.CompletedAscending}
+              >
+                Incompleted
+              </option>
+              <option
+                value={SortBy.CompletedDescending}
+                key={SortBy.CompletedDescending}
+              >
+                Completed
+              </option>
             </Select>
           </HStack>
 
           {selectedBoard?.special !== 1 && (
             <Button
+              key={"button"}
               onClick={() => {
                 if (selectedBoard) {
                   if (selectedBoard.special == 2) {
@@ -746,7 +784,7 @@ export default function Todo() {
                 </Tooltip>
               </Box>
             ))}
-        </>
+        </div>
 
         <AlertDialog
           leastDestructiveRef={emptyRef}
@@ -754,6 +792,7 @@ export default function Todo() {
           onClose={closeTaskModal}
           motionPreset="slideInBottom"
           isCentered
+          key={"open-task-modal"}
         >
           <AlertDialogOverlay />
           {selectedTask && (
@@ -1071,6 +1110,7 @@ export default function Todo() {
           }}
           motionPreset="slideInBottom"
           isCentered
+          key={"save-changes"}
         >
           <AlertDialogOverlay />
           <AlertDialogContent
@@ -1188,6 +1228,7 @@ export default function Todo() {
           isOpen={isOpen}
           leastDestructiveRef={cancelRef}
           onClose={onClose}
+          key={"error-modal"}
         >
           <AlertDialogOverlay>
             <AlertDialogContent
@@ -1266,6 +1307,7 @@ export default function Todo() {
           isOpen={isOpenDelete}
           leastDestructiveRef={cancelDeleteRef}
           onClose={onCloseDelete}
+          key={"delete-modal"}
         >
           <AlertDialogOverlay>
             <AlertDialogContent
@@ -1347,6 +1389,7 @@ export default function Todo() {
           isOpen={isInfoOpen}
           leastDestructiveRef={emptyRef}
           onClose={onInfoClose}
+          key={"info-modal"}
         >
           <AlertDialogOverlay>
             <AlertDialogContent
@@ -1416,6 +1459,7 @@ export default function Todo() {
             setNewTaskModal(newTaskModal + 1);
           }}
           borderRadius="full"
+          key={"mobile-add-button"}
         >
           <FaPlus size={"30px"} />
         </Button>
