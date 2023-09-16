@@ -46,7 +46,7 @@ const Custom404: NextPage = () => {
                   <Text
                     color={useColorModeValue(
                       "brand.light.blue",
-                      "brand.dark.blue"
+                      "brand.dark.blue",
                     )}
                     _hover={{ textDecoration: "underline" }}
                     fontSize="xl"
