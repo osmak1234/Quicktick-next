@@ -180,8 +180,6 @@ export default function Todo(props: {
 
   const [sort, setSort] = useState<SortBy>(SortBy.NameAscending);
 
-  const parent = useRef(null);
-
   function sortTasks(sortBy: SortBy, a: Task, b: Task) {
     switch (sortBy) {
       case SortBy.NameAscending:
@@ -196,6 +194,8 @@ export default function Todo(props: {
         return 0;
     }
   }
+
+  const parent = useRef(null);
 
   useEffect(() => {
     parent.current && autoAnimate(parent.current);
@@ -333,245 +333,154 @@ export default function Todo(props: {
             Todo
           </Heading>
         </HStack>
-        <div key={"div"}>
-          <NewTaskModal
-            isOpenTaskModal={isOpenTaskModal}
-            setTasks={setTasks}
-            boardUUID={selectedBoard ? selectedBoard.uuid : ""}
-            bg={bg}
-            fg={fg}
-            orange={orange}
-            newTaskModal={newTaskModal}
-            device={device}
-          />
-          <HStack
-            display="flex"
-            flexDirection="row"
-            alignItems={isLargerThan768 ? "center" : "flex-start"}
-            justifyContent={isLargerThan768 ? "center" : "space-between"}
-            w="full"
-            maxW={500}
-            mt={4}
-            key={"h-stack-2"}
-          >
-            {isLargerThan768 && (
-              <Text color={`${fg}4`} fontSize="sm" fontWeight="bold">
-                Start typing to create
-              </Text>
-            )}
-            <Spacer />
-
-            <Text
-              cursor="pointer"
-              _hover={{
-                color: `${orange}`,
-              }}
-              fontWeight="bold"
-              color={`${fg}2`}
-              fontSize="xl"
-              onClick={() => {
-                onInfoOpen();
-              }}
-            >
-              ?
+        <NewTaskModal
+          isOpenTaskModal={isOpenTaskModal}
+          setTasks={setTasks}
+          boardUUID={selectedBoard ? selectedBoard.uuid : ""}
+          bg={bg}
+          fg={fg}
+          orange={orange}
+          newTaskModal={newTaskModal}
+          device={device}
+        />
+        <HStack
+          display="flex"
+          flexDirection="row"
+          alignItems={isLargerThan768 ? "center" : "flex-start"}
+          justifyContent={isLargerThan768 ? "center" : "space-between"}
+          w="full"
+          maxW={500}
+          mt={4}
+          key={"h-stack-2"}
+        >
+          {isLargerThan768 && (
+            <Text color={`${fg}4`} fontSize="sm" fontWeight="bold">
+              Start typing to create
             </Text>
-            <Spacer />
-
-            <Select
-              value={selectedBoard ? selectedBoard.uuid : ""}
-              bg={`${bg}_h`}
-              color={`${fg}`}
-              onChange={(e) => {
-                const selectedBoardUUID = e.target.value;
-                const foundBoard = boards.find(
-                  (board) => board.uuid === selectedBoardUUID,
-                );
-                if (foundBoard) {
-                  setSelectedBoard(foundBoard);
-                }
-              }}
-              borderWidth={2}
-              borderColor={`${bg}2`}
-              focusBorderColor={orange}
-              maxWidth="150px"
-              alignSelf="flex-end"
-              mt={isLargerThan768 ? 0 : 4}
-              key={"select1"}
-            >
-              {boards.map((board) => (
-                <option key={board.uuid} value={board.uuid}>
-                  {board.name}
-                </option>
-              ))}
-            </Select>
-            <Select
-              value={sort}
-              bg={`${bg}_h`}
-              color={`${fg}`}
-              onChange={(e) => {
-                setSort(Number(e.target.value));
-              }}
-              borderWidth={2}
-              borderColor={`${bg}2`}
-              focusBorderColor={orange}
-              maxWidth="150px"
-              alignSelf="flex-end"
-              mt={isLargerThan768 ? 0 : 4} // Adjust the margin for smaller screens
-              key={"select"}
-            >
-              <option value={SortBy.NameAscending} key={SortBy.NameAscending}>
-                A - Z
-              </option>
-              <option value={SortBy.NameDescending} key={SortBy.NameDescending}>
-                Z - A
-              </option>
-              {/* <option value={SortBy.DateAscending}>Date Ascending</option> */}
-              {/*<option value={SortBy.DateDescending}>Date Descending</option>*/}
-              <option
-                value={SortBy.CompletedAscending}
-                key={SortBy.CompletedAscending}
-              >
-                Incompleted
-              </option>
-              <option
-                value={SortBy.CompletedDescending}
-                key={SortBy.CompletedDescending}
-              >
-                Completed
-              </option>
-            </Select>
-          </HStack>
-
-          {selectedBoard?.special !== 1 && (
-            <Button
-              key={"button"}
-              onClick={() => {
-                if (selectedBoard) {
-                  if (selectedBoard.special == 2) {
-                    deleteAllBoardTasks(selectedBoard.uuid, device).catch(
-                      (err: Error) => {
-                        console.log(err);
-                        setErrorMessage(
-                          err.message + "Try refreshing." ||
-                            "Something went wrong. Try refreshing",
-                        );
-                        onOpen();
-                      },
-                    );
-                    setTasks([]);
-                  } else {
-                    const archive_uuid = boards.find(
-                      (board) => board.special == 2,
-                    )?.uuid;
-
-                    if (archive_uuid) {
-                      // move all tasks to archive
-                      const taskUpdateInput: TaskUpdateInput = {
-                        task_uuid: "won't be used",
-                        action: TaskAction.MovMoveAllTasksFromBoard,
-                        NewBoard: archive_uuid,
-                        OldBoard: selectedBoard?.uuid ?? "",
-                      };
-                      console.log(taskUpdateInput);
-
-                      // change the board uuid of all tasks in this board
-                      setTasks((prevTasks) =>
-                        prevTasks.filter(
-                          (task) => task.board_uuid !== selectedBoard?.uuid,
-                        ),
-                      );
-
-                      updateTask(taskUpdateInput, device).catch(
-                        (err: Error) => {
-                          console.log(err);
-                          // open error modal
-                          setErrorMessage(
-                            err.message + "Try refreshing." ||
-                              "Something went wrong. Try refreshing",
-                          );
-                          onOpen();
-                        },
-                      );
-                    }
-                  }
-                }
-              }}
-              bg={`${bg}2`}
-              color={`${fg}`}
-              _hover={{ bg: `${bg}3` }}
-              _active={{ bg: `${bg}1` }}
-              maxW={500}
-              w="full"
-              mt={4}
-              p={4}
-              borderRadius="md"
-              boxShadow="md"
-            >
-              {selectedBoard?.special == 2
-                ? "Delete all permanently"
-                : "Move all to archive"}
-            </Button>
           )}
+          <Spacer />
 
-          {tasks
-            .sort((a, b) => sortTasks(sort, a, b))
-            .filter(
-              (
-                task, // filter out tasks that don't belong to the selected board
-              ) => {
-                if (selectedBoard?.special == 1) {
-                  //find special == 2 board_uuid
+          <Text
+            cursor="pointer"
+            _hover={{
+              color: `${orange}`,
+            }}
+            fontWeight="bold"
+            color={`${fg}2`}
+            fontSize="xl"
+            onClick={() => {
+              onInfoOpen();
+            }}
+          >
+            ?
+          </Text>
+          <Spacer />
+
+          <Select
+            value={selectedBoard ? selectedBoard.uuid : ""}
+            bg={`${bg}_h`}
+            color={`${fg}`}
+            onChange={(e) => {
+              const selectedBoardUUID = e.target.value;
+              const foundBoard = boards.find(
+                (board) => board.uuid === selectedBoardUUID,
+              );
+              if (foundBoard) {
+                setSelectedBoard(foundBoard);
+              }
+            }}
+            borderWidth={2}
+            borderColor={`${bg}2`}
+            focusBorderColor={orange}
+            maxWidth="150px"
+            alignSelf="flex-end"
+            mt={isLargerThan768 ? 0 : 4}
+            key={"select1"}
+          >
+            {boards.map((board) => (
+              <option key={board.uuid} value={board.uuid}>
+                {board.name}
+              </option>
+            ))}
+          </Select>
+          <Select
+            value={sort}
+            bg={`${bg}_h`}
+            color={`${fg}`}
+            onChange={(e) => {
+              setSort(Number(e.target.value));
+            }}
+            borderWidth={2}
+            borderColor={`${bg}2`}
+            focusBorderColor={orange}
+            maxWidth="150px"
+            alignSelf="flex-end"
+            mt={isLargerThan768 ? 0 : 4} // Adjust the margin for smaller screens
+            key={"select"}
+          >
+            <option value={SortBy.NameAscending} key={SortBy.NameAscending}>
+              A - Z
+            </option>
+            <option value={SortBy.NameDescending} key={SortBy.NameDescending}>
+              Z - A
+            </option>
+            {/* <option value={SortBy.DateAscending}>Date Ascending</option> */}
+            {/*<option value={SortBy.DateDescending}>Date Descending</option>*/}
+            <option
+              value={SortBy.CompletedAscending}
+              key={SortBy.CompletedAscending}
+            >
+              Incompleted
+            </option>
+            <option
+              value={SortBy.CompletedDescending}
+              key={SortBy.CompletedDescending}
+            >
+              Completed
+            </option>
+          </Select>
+        </HStack>
+
+        {selectedBoard?.special !== 1 && (
+          <Button
+            key={"button"}
+            onClick={() => {
+              if (selectedBoard) {
+                if (selectedBoard.special == 2) {
+                  deleteAllBoardTasks(selectedBoard.uuid, device).catch(
+                    (err: Error) => {
+                      console.log(err);
+                      setErrorMessage(
+                        err.message + "Try refreshing." ||
+                          "Something went wrong. Try refreshing",
+                      );
+                      onOpen();
+                    },
+                  );
+                  setTasks([]);
+                } else {
                   const archive_uuid = boards.find(
                     (board) => board.special == 2,
                   )?.uuid;
-                  return task.board_uuid != archive_uuid;
-                } else {
-                  return task.board_uuid == selectedBoard?.uuid;
-                }
-              },
-            )
-            .map((task) => (
-              <Box
-                zIndex={1}
-                w="full"
-                maxW={500}
-                key={task.uuid}
-                display="flex"
-                flexDirection="row"
-                alignItems="center"
-                bg={`${bg}_h`}
-                p={4}
-                borderRadius="md"
-                onClick={() => openTaskModal(task)}
-                mt={4}
-                boxShadow="md"
-                transition="background-color 0.2s, transform 0.2s"
-                _hover={{
-                  bg: `${bg}_h_hover`,
-                  transform: "translateY(-2px)",
-                  boxShadow: "lg",
-                }}
-              >
-                <Button
-                  zIndex={2}
-                  aria-label="toggle task status"
-                  mr={4}
-                  bg="transparent"
-                  _dark={{
-                    bg: "transparent",
-                    color: task.completed
-                      ? "brand.dark.orange"
-                      : "brand.dark.fg",
-                  }}
-                  color={
-                    task.completed ? "brand.light.orange" : "brand.light.fg"
-                  }
-                  _hover={{
-                    color: "brand.light.orange",
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleTask(task.uuid).catch((err: Error) => {
+
+                  if (archive_uuid) {
+                    // move all tasks to archive
+                    const taskUpdateInput: TaskUpdateInput = {
+                      task_uuid: "won't be used",
+                      action: TaskAction.MovMoveAllTasksFromBoard,
+                      NewBoard: archive_uuid,
+                      OldBoard: selectedBoard?.uuid ?? "",
+                    };
+                    console.log(taskUpdateInput);
+
+                    // change the board uuid of all tasks in this board
+                    setTasks((prevTasks) =>
+                      prevTasks.filter(
+                        (task) => task.board_uuid !== selectedBoard?.uuid,
+                      ),
+                    );
+
+                    updateTask(taskUpdateInput, device).catch((err: Error) => {
                       console.log(err);
                       // open error modal
                       setErrorMessage(
@@ -580,184 +489,155 @@ export default function Todo(props: {
                       );
                       onOpen();
                     });
-                  }}
-                  p={0}
-                >
-                  {task.completed ? (
-                    <BsXSquare size={"33px"} />
-                  ) : (
-                    <BsSquare size={"33px"} />
-                  )}
-                </Button>
-                <VStack align="flex-start" spacing={1}>
-                  <Text
-                    fontWeight="bold"
-                    color={`${fg}_h`}
-                    // on mobile don't let the text be scrollable
-                    overflowWrap="anywhere"
-                  >
-                    {task.name}
-                  </Text>
-                  <Text color={`${fg}2`} overflowWrap="anywhere">
-                    {task.description.length > 100
-                      ? task.description.substring(0, 100) + "..."
-                      : task.description}
-                  </Text>
-                </VStack>
-                <Spacer />
-                <Tooltip
-                  label="Move task to another board"
-                  aria-label="Move task to another board"
-                  openDelay={1000}
-                  variant="styled"
-                >
-                  <Box position="relative">
-                    <Select
-                      zIndex={2}
-                      variant="unstyled"
-                      p={0}
-                      w="32px"
-                      h="32px"
-                      bg={`${bg}_h`}
-                      icon={<> </>}
-                      color={fg}
-                      borderWidth={0}
-                      _hover={{
-                        border: "1px",
-                        borderStyle: "solid",
-                        borderColor: fg,
-                      }}
-                      value={""}
-                      focusBorderColor={orange}
-                      alignSelf="center"
-                      mt={isLargerThan768 ? 0 : 4}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        const selectedBoardUUID = e.target.value;
+                  }
+                }
+              }
+            }}
+            bg={`${bg}2`}
+            color={`${fg}`}
+            _hover={{ bg: `${bg}3` }}
+            _active={{ bg: `${bg}1` }}
+            maxW={500}
+            w="full"
+            mt={4}
+            p={4}
+            borderRadius="md"
+            boxShadow="md"
+          >
+            {selectedBoard?.special == 2
+              ? "Delete all permanently"
+              : "Move all to archive"}
+          </Button>
+        )}
 
-                        const foundBoard = boards.find(
-                          (board) => board.uuid === selectedBoardUUID,
-                        );
-                        if (foundBoard) {
-                          const taskUpdateInput: TaskUpdateInput = {
-                            task_uuid: task.uuid,
-                            action: TaskAction.MoveBoard,
-                            NewBoard: selectedBoardUUID,
-                          };
-                          updateTask(taskUpdateInput, device).catch(
-                            (err: Error) => {
-                              console.log(err);
-                              // open error modal
-                              setErrorMessage(
-                                err.message + "Try refreshing." ||
-                                  "Something went wrong. Try refreshing",
-                              );
-                              onOpen();
-                            },
-                          );
-                          setTasks((prevTasks) =>
-                            prevTasks.filter(
-                              (t) => t.uuid !== taskUpdateInput.task_uuid,
-                            ),
-                          );
-                        }
-                      }}
-                    >
-                      <option value={""} disabled hidden defaultChecked>
-                        {" "}
-                      </option>
-                      {boards
-                        .filter((board) => board.uuid !== selectedBoard?.uuid)
-                        .map((board) => (
-                          <option key={board.uuid} value={board.uuid}>
-                            {board.name}
-                          </option>
-                        ))}
-                    </Select>
-                    <TbArrowMoveRight
-                      size="20px"
-                      style={{
-                        pointerEvents: "none",
-                        zIndex: 5,
-                        position: "absolute",
-                        left: "7px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                      }}
-                    />
-                  </Box>
-                </Tooltip>
-
-                <Tooltip
-                  label="Edit task"
-                  aria-label="Edit task"
-                  openDelay={1000}
-                  variant="styled"
+        {tasks
+          .sort((a, b) => sortTasks(sort, a, b))
+          .filter(
+            (
+              task, // filter out tasks that don't belong to the selected board
+            ) => {
+              if (selectedBoard?.special == 1) {
+                //find special == 2 board_uuid
+                const archive_uuid = boards.find((board) => board.special == 2)
+                  ?.uuid;
+                return task.board_uuid != archive_uuid;
+              } else {
+                return task.board_uuid == selectedBoard?.uuid;
+              }
+            },
+          )
+          .map((task) => (
+            <Box
+              zIndex={1}
+              w="full"
+              maxW={500}
+              key={task.uuid}
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              bg={`${bg}_h`}
+              p={4}
+              borderRadius="md"
+              onClick={() => openTaskModal(task)}
+              mt={4}
+              boxShadow="md"
+              transition="background-color 0.2s, transform 0.2s"
+              _hover={{
+                bg: `${bg}_h_hover`,
+                transform: "translateY(-2px)",
+                boxShadow: "lg",
+              }}
+            >
+              <Button
+                zIndex={2}
+                aria-label="toggle task status"
+                mr={4}
+                bg="transparent"
+                _dark={{
+                  bg: "transparent",
+                  color: task.completed ? "brand.dark.orange" : "brand.dark.fg",
+                }}
+                color={task.completed ? "brand.light.orange" : "brand.light.fg"}
+                _hover={{
+                  color: "brand.light.orange",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleTask(task.uuid).catch((err: Error) => {
+                    console.log(err);
+                    // open error modal
+                    setErrorMessage(
+                      err.message + "Try refreshing." ||
+                        "Something went wrong. Try refreshing",
+                    );
+                    onOpen();
+                  });
+                }}
+                p={0}
+              >
+                {task.completed ? (
+                  <BsXSquare size={"33px"} />
+                ) : (
+                  <BsSquare size={"33px"} />
+                )}
+              </Button>
+              <VStack align="flex-start" spacing={1}>
+                <Text
+                  fontWeight="bold"
+                  color={`${fg}_h`}
+                  // on mobile don't let the text be scrollable
+                  overflowWrap="anywhere"
                 >
-                  <Button
+                  {task.name}
+                </Text>
+                <Text color={`${fg}2`} overflowWrap="anywhere">
+                  {task.description.length > 100
+                    ? task.description.substring(0, 100) + "..."
+                    : task.description}
+                </Text>
+              </VStack>
+              <Spacer />
+              <Tooltip
+                label="Move task to another board"
+                aria-label="Move task to another board"
+                openDelay={1000}
+                variant="styled"
+              >
+                <Box position="relative">
+                  <Select
                     zIndex={2}
-                    aria-label="modify task"
-                    variant="ghost"
-                    colorScheme="red"
-                    size="sm"
-                    alignSelf="center"
-                    padding={0}
+                    variant="unstyled"
+                    p={0}
+                    w="32px"
+                    h="32px"
+                    bg={`${bg}_h`}
+                    icon={<> </>}
                     color={fg}
+                    borderWidth={0}
                     _hover={{
                       border: "1px",
                       borderStyle: "solid",
                       borderColor: fg,
                     }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditName(true);
-                      setEditNameInput(task.name);
-                      setEditDescription(true);
-                      setEditDescriptionInput(task.description);
-                      openTaskModal(task);
-                    }}
-                  >
-                    <BsPencilSquare size={"20px"} />
-                  </Button>
-                </Tooltip>
-
-                <Tooltip
-                  label="Delete task"
-                  aria-label="Delete task"
-                  openDelay={1000}
-                  variant="styled"
-                >
-                  <Button
-                    zIndex={2}
-                    aria-label="delete task"
-                    variant="ghost"
-                    colorScheme="red"
-                    size="sm"
+                    value={""}
+                    focusBorderColor={orange}
                     alignSelf="center"
-                    padding={0}
-                    color="brand.light.red"
-                    _dark={{ color: "brand.dark.red" }}
-                    _hover={{
-                      border: "1px",
-                      borderStyle: "solid",
-                      borderColor: "red.500",
-                    }}
+                    mt={isLargerThan768 ? 0 : 4}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (selectedBoard?.special == 2) {
-                        setSelectedTask(task);
-                        onOpenDelete();
-                      } else {
-                        // special 2 is archive, so we just move it into it because it isn't already there
+                    }}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      const selectedBoardUUID = e.target.value;
+
+                      const foundBoard = boards.find(
+                        (board) => board.uuid === selectedBoardUUID,
+                      );
+                      if (foundBoard) {
                         const taskUpdateInput: TaskUpdateInput = {
                           task_uuid: task.uuid,
                           action: TaskAction.MoveBoard,
-                          NewBoard:
-                            boards.find((board) => board.special == 2)?.uuid ??
-                            "",
+                          NewBoard: selectedBoardUUID,
                         };
                         updateTask(taskUpdateInput, device).catch(
                           (err: Error) => {
@@ -771,17 +651,95 @@ export default function Todo(props: {
                           },
                         );
                         setTasks((prevTasks) =>
-                          prevTasks.filter((t) => t.uuid !== task.uuid),
+                          prevTasks.filter(
+                            (t) => t.uuid !== taskUpdateInput.task_uuid,
+                          ),
                         );
                       }
                     }}
                   >
-                    <BsX size={"30px"} />
-                  </Button>
-                </Tooltip>
-              </Box>
-            ))}
-        </div>
+                    <option value={""} disabled hidden defaultChecked>
+                      {" "}
+                    </option>
+                    {boards
+                      .filter((board) => board.uuid !== selectedBoard?.uuid)
+                      .map((board) => (
+                        <option key={board.uuid} value={board.uuid}>
+                          {board.name}
+                        </option>
+                      ))}
+                  </Select>
+                  <TbArrowMoveRight
+                    size="20px"
+                    style={{
+                      pointerEvents: "none",
+                      zIndex: 5,
+                      position: "absolute",
+                      left: "7px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                    }}
+                  />
+                </Box>
+              </Tooltip>
+
+              <Tooltip
+                label="Delete task"
+                aria-label="Delete task"
+                openDelay={1000}
+                variant="styled"
+              >
+                <Button
+                  zIndex={2}
+                  aria-label="delete task"
+                  variant="ghost"
+                  colorScheme="red"
+                  size="sm"
+                  alignSelf="center"
+                  padding={0}
+                  color="brand.light.red"
+                  _dark={{ color: "brand.dark.red" }}
+                  _hover={{
+                    border: "1px",
+                    borderStyle: "solid",
+                    borderColor: "red.500",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedBoard?.special == 2) {
+                      setSelectedTask(task);
+                      onOpenDelete();
+                    } else {
+                      // special 2 is archive, so we just move it into it because it isn't already there
+                      const taskUpdateInput: TaskUpdateInput = {
+                        task_uuid: task.uuid,
+                        action: TaskAction.MoveBoard,
+                        NewBoard:
+                          boards.find((board) => board.special == 2)?.uuid ??
+                          "",
+                      };
+                      updateTask(taskUpdateInput, device).catch(
+                        (err: Error) => {
+                          console.log(err);
+                          // open error modal
+                          setErrorMessage(
+                            err.message + "Try refreshing." ||
+                              "Something went wrong. Try refreshing",
+                          );
+                          onOpen();
+                        },
+                      );
+                      setTasks((prevTasks) =>
+                        prevTasks.filter((t) => t.uuid !== task.uuid),
+                      );
+                    }
+                  }}
+                >
+                  <BsX size={"30px"} />
+                </Button>
+              </Tooltip>
+            </Box>
+          ))}
 
         <AlertDialog
           leastDestructiveRef={emptyRef}
