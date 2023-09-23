@@ -399,7 +399,7 @@ export default function Todo(props: {
           >
             {boards.map((board) => (
               <option key={board.uuid} value={board.uuid}>
-                {board.name}
+                {board.label} {board.name}
               </option>
             ))}
           </Select>
@@ -512,20 +512,15 @@ export default function Todo(props: {
 
         {tasks
           .sort((a, b) => sortTasks(sort, a, b))
-          .filter(
-            (
-              task, // filter out tasks that don't belong to the selected board
-            ) => {
-              if (selectedBoard?.special == 1) {
-                //find special == 2 board_uuid
-                const archive_uuid = boards.find((board) => board.special == 2)
-                  ?.uuid;
-                return task.board_uuid != archive_uuid;
-              } else {
-                return task.board_uuid == selectedBoard?.uuid;
-              }
-            },
-          )
+          .filter((task) => {
+            if (selectedBoard?.special == 1) {
+              const archive_uuid = boards.find((board) => board.special == 2)
+                ?.uuid;
+              return task.board_uuid != archive_uuid;
+            } else {
+              return task.board_uuid == selectedBoard?.uuid;
+            }
+          })
           .map((task) => (
             <Box
               zIndex={1}
@@ -587,12 +582,19 @@ export default function Todo(props: {
                   color={`${fg}_h`}
                   // on mobile don't let the text be scrollable
                   overflowWrap="anywhere"
+                  whiteSpace={"pre-wrap"}
+                  noOfLines={2}
                 >
                   {task.name}
                 </Text>
-                <Text color={`${fg}2`} overflowWrap="anywhere">
+                <Text
+                  color={`${fg}2`}
+                  overflowWrap="anywhere"
+                  whiteSpace={"pre-wrap"}
+                  noOfLines={3}
+                >
                   {task.description.length > 100
-                    ? task.description.substring(0, 100) + "..."
+                    ? task.description.substring(0, 100)
                     : task.description}
                 </Text>
               </VStack>
