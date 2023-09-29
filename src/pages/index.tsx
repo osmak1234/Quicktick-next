@@ -136,20 +136,52 @@ export default function Home() {
                   router.push("/login").catch((err) => console.log(err));
                 }}
               >
-                Get Started
-                <Icon
-                  boxSize={4}
-                  ml={1}
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </Icon>
+                Create account
               </Button>
+                            <Box
+                as="a"
+                href="https://github.com/osmak1234/quicktick-next"
+                ml={{
+                  base: 0,
+                  sm: 5,
+                }}
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                color={`${fg}_h`}
+                w={{
+                  base: "full",
+                  sm: "auto",
+                }}
+              >
+                <Text
+                  fontSize={{
+                    base: "lg",
+                    md: "xl",
+                  }}
+                  color={`${fg}1`}
+                  pr="2"
+                >
+                  Source Code
+                </Text>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                >
+                  <g
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                  >
+                    <path d="M16 22.027v-2.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7a5.44 5.44 0 0 0-1.5-3.75a5.07 5.07 0 0 0-.09-3.77s-1.18-.35-3.91 1.48a13.38 13.38 0 0 0-7 0c-2.73-1.83-3.91-1.48-3.91-1.48A5.07 5.07 0 0 0 5 5.797a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7a3.37 3.37 0 0 0-.94 2.58v2.87"></path>
+                    <path d="M9 20.027c-3 .973-5.5 0-7-3"></path>
+                  </g>
+                </svg>
+              </Box>
             </Stack>
           </Box>
           <Box
