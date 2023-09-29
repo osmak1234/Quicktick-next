@@ -1,4 +1,4 @@
-# Quicktick NextJS
+# [Quicktick NextJS](https://quicktick-next.vercel.app/)
 
 This is a fronted for my [Api](https://github.com/osmak1234/quicktick-api)
 <img alt="desktop webapp 1" src="https://github.com/osmak1234/Quicktick-next/blob/main/Pasted%20image.png" />
